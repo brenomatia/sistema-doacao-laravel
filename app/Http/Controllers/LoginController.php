@@ -44,16 +44,12 @@ class LoginController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (auth()->attempt($credentials)) {
-            if (Auth::check()) {
-                if (Auth::user()->tipo == "admin") {
-                    return redirect()->intended('/dashboard'); // Redirecionar para a página de destino após o login
-                }
-                return back()->with('error', 'Acesso negado.');
-            }
+            return redirect()->intended('/dashboard');
         }
 
-        return back()->with('error', 'Credenciais inválidas. Por favor, tente novamente.');
+        return back()->with('error', 'Credenciais inválidas. Verifique seu e-mail e senha e tente novamente.');
     }
+
     public function dashboard_home(Request $request)
     {
         return view('admin.dashboard');

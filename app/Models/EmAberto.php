@@ -5,16 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Mod extends Model
+class EmAberto extends Model
 {
-    protected $table = 'empresa_logs';
+    protected $table = 'emaberto';
     protected $primaryKey = 'id';
 
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'mod',
+        'cliente_id',
+        'valor',
+        'nome_cliente',
+        'end_cliente',
+        'status',
     ];
-
 }

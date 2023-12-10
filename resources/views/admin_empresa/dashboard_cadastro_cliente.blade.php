@@ -5,7 +5,7 @@
 @section('content')
     <style>
         .custom-input {
-            padding: 0px 10px!important;
+            padding: 0px 10px !important;
             border: 1px solid #ccc;
             border-radius: 5px;
             font-size: 16px;
@@ -91,17 +91,17 @@
             + Clientes
         </button>
 
-        <form action="{{ route('empresa_doações_localizar', ['empresa' => $empresa->name ]) }}" method="POST">
+        <form action="{{ route('empresa_doações_localizar', ['empresa' => $empresa->name]) }}" method="POST">
             @csrf
-        <!-- Campo de input para buscar cliente com ícone de lupa -->
-        <div class="input-group mt-3 mb-3">
-            <input type="text" class="form-control" placeholder="Buscar cliente" name="search">
-            <div class="input-group-append">
-                <span class="input-group-text bg-gradient-success text-white">
-                    <i class="fas fa-search"></i>
-                </span>
+            <!-- Campo de input para buscar cliente com ícone de lupa -->
+            <div class="input-group mt-3 mb-3">
+                <input type="text" class="form-control" placeholder="Buscar cliente" name="search">
+                <div class="input-group-append">
+                    <span class="input-group-text bg-gradient-success text-white">
+                        <i class="fas fa-search"></i>
+                    </span>
+                </div>
             </div>
-        </div>
             <button type="submit" class="btn bg-gradient-success text-white col-12">Buscar cliente</button>
         </form>
 
@@ -148,23 +148,256 @@
                             <td class="align-middle text-center">R$ {{ $cliente->valor }}</td>
                             <td class="align-middle text-center">{{ $cliente->created_at->format('d/m/Y') }}</td>
                             <td class="align-middle text-center">
-                                @if($cliente->situacao != "PRIMEIRA")
-                                    <form action="{{ route('empresa_cadastro_cliente_primeira', ['empresa' => $empresa->name,'id' => $cliente->id]) }}" method="POST" style="display: inline-block;">
+
+                                @if ($cliente->situacao != 'PRIMEIRA')
+                                    <form
+                                        action="{{ route('empresa_cadastro_cliente_primeira', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
+                                        method="POST" style="display: inline-block;">
                                         @csrf
-                                        <button type="submit" class="btn btn-dark">PRIMEIRA EMISSÃO</button>
+                                        <button type="submit" class="btn" style="background-color: #38414A; color: white;">1° EMISSÃO</button>
                                     </form>
                                 @endif
-                                <a style="display: inline-block; margin-left: 9px;" class="btn btn-primary"
-                                href="{{ route('Empresa_cadastro_cliente_view', ['empresa' => $empresa->name,'id' => $cliente->id]) }}"><i class="fa-solid fa-eye"></i></a>
+                            
+                                <button type="button" class="btn bg-gradient-success text-white" data-toggle="modal"
+                                    data-target="#dadosCliente_{{ $cliente->id }}">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
 
-                                <a style="display: inline-block; margin-left: 9px;" class="btn bg-gradient-warning text-white"
-                                href="{{ route('empresa_doações', ['empresa' => $empresa->name,'id' => $cliente->id]) }}"><i class="fa-solid fa-rectangle-list"></i></a>
+                                <button type="button" class="btn bg-gradient-success text-white" data-toggle="modal"
+                                data-target="#lista_{{ $cliente->id }}">
+                                <i class="fa-solid fa-rectangle-list"></i>
+                                </button>
 
-                                <form action="{{ route('Empresa_cadastro_cliente_deletar', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}" method="POST" style="display: inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button class="btn btn-danger"><i class="fa-solid fa-trash-can"></i></button>
-                                </form>
+                                
+                                <a href="{{ route('empresa_termo_sae_route', ['empresa'=>$empresa->name, 'id'=>$cliente->id]) }}"><button type="button" class="btn bg-gradient-primary text-white mr-1"><i class="fa-solid fa-file-contract"></i></button></a>
+                              
+                                <button type="button" class="btn bg-gradient-danger text-white" data-toggle="modal"
+                                data-target="#delete_{{ $cliente->id }}">
+                                <i class="fa-solid fa-trash-can"></i>
+                                </button>
+
+                                <div class="modal fade" id="delete_{{ $cliente->id }}" tabindex="-1" role="dialog"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="container">
+                                                    <form action="{{ route('Empresa_cadastro_cliente_deletar', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}" method="POST" style="display: inline-block;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <p>Tem certeza de que deseja excluir o cliente <strong>{{ $cliente->name }}</strong> do sistema?</p>
+                                                        <div class="text-right">
+                                                            <button type="button" class="btn btn-outline-danger" data-dismiss="modal">Cancelar</button>
+                                                            <button type="submit" class="btn bg-gradient-danger text-white">Remover Cliente</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- MODAL LISTA DE  -->
+                                <div class="modal fade" id="lista_{{ $cliente->id }}" tabindex="-1" role="dialog"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Fechar">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="container">
+                                                    <h3>Transações de Doações</h3> 
+                                                    <div class="table-responsive">
+                                                        <table class="table table-bordered table-hover">
+                                                            <thead class="bg-gradient-success text-white">
+                                                                <tr>
+                                                                    <th class="rounded-left">ID</th>
+                                                                    <th>Cliente</th>
+                                                                    <th>Valor</th>
+                                                                    <th>Tipo</th>
+                                                                    <th class="rounded-right">Data da Doação</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach ($doacoes as $doacao)
+                                                                    <tr>
+                                                                        @if($doacao->cliente_id == $cliente->id)
+                                                                            <td>{{ $doacao->id }}</td>
+                                                                            <td>{{ $doacao->cliente->name }}</td>
+                                                                            <td>R$ {{ $doacao->valor }}</td>
+                                                                            <td>{{ $doacao->tipo }}</td>
+                                                                            <td>{{ $doacao->created_at->format('d/m/Y') }}</td>
+                                                                        @endif                                                                    
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- MODAL DADOS CLIENTE  -->
+                                <div class="modal fade" id="dadosCliente_{{ $cliente->id }}" tabindex="-1" role="dialog"
+                                    aria-labelledby="exampleModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog modal-lg" role="document">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title" id="exampleModalLabel">Atualizar dados cliente</h5>
+                                                <button type="button" class="close" data-dismiss="modal"
+                                                    aria-label="Fechar">
+                                                    <span aria-hidden="true">&times;</span>
+                                                </button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <form
+                                                    action="{{ route('Empresa_cadastro_cliente_att', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    <div class="container">
+                                                        <div class="row">
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-user"></i>
+                                                                    </span>
+                                                                    <input type="text" class="form-control custom-input"
+                                                                        id="cliente_nome" name="cliente_nome"
+                                                                        value="{{ $cliente->name }}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-6 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-map-marked-alt"></i>
+                                                                    </span>
+                                                                    <input type="text" class="form-control custom-input"
+                                                                        id="cliente_endereco" name="cliente_endereco"
+                                                                        value="{{ $cliente->rua }}" required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-building"></i>
+                                                                    </span>
+                                                                    <input type="text"
+                                                                        class="form-control custom-input"
+                                                                        id="cliente_numero" name="cliente_numero"
+                                                                        value="{{ $cliente->numero }}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-phone"></i>
+                                                                    </span>
+                                                                    <input type="text"
+                                                                        class="form-control custom-input"
+                                                                        id="cliente_telefone" name="cliente_telefone"
+                                                                        value="{{ $cliente->celular }}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-home"></i>
+                                                                    </span>
+                                                                    <input type="text"
+                                                                        class="form-control custom-input"
+                                                                        id="cliente_bairro" name="cliente_bairro"
+                                                                        value="{{ $cliente->bairro }}" required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-city"></i>
+                                                                    </span>
+                                                                    <input type="text"
+                                                                        class="form-control custom-input"
+                                                                        id="cliente_cidade" name="cliente_cidade"
+                                                                        value="{{ $cliente->cidade }}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-solid fa-money-bill-wave"></i>
+                                                                    </span>
+                                                                    <input type="number"
+                                                                        class="form-control custom-input"
+                                                                        id="valor_doacao" name="valor_doacao"
+                                                                        value="{{ $cliente->valor }}" required>
+                                                                </div>
+                                                            </div>
+                                                            <div class="col-md-4 mb-3">
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <strong>R$</strong>
+                                                                    </span>
+                                                                    <select class="form-select custom-input"
+                                                                        id="pagamento" name="cliente_pagamento">
+                                                                        <option value="MENSAL"
+                                                                            {{ $cliente->tipo_pagamento === 'MENSAL' ? 'selected' : '' }}>
+                                                                            MENSAL</option>
+                                                                        <option value="ÚNICA"
+                                                                            {{ $cliente->tipo_pagamento === 'ÚNICA' ? 'selected' : '' }}>
+                                                                            ÚNICA</option>
+                                                                    </select>
+
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="row">
+                                                            <div class="col-md-12 mb-3">
+                                                                <label>Data vencimento:</label>
+                                                                <div class="input-group">
+                                                                    <span
+                                                                        class="input-group-text bg-gradient-success text-white">
+                                                                        <i class="fa-regular fa-calendar"></i>
+                                                                    </span>
+                                                                    <input type="date"
+                                                                        class="form-control custom-input" id="data_doacao"
+                                                                        name="vencimento"
+                                                                        value="{{ $cliente->created_at->format('Y-m-d') }}"
+                                                                        required>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="d-flex justify-content-between mb-4">
+                                                            <button type="submit"
+                                                                class="btn bg-gradient-success text-white col-12">Atualizar</button>
+                                                        </div>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     @endforeach
@@ -186,7 +419,8 @@
                 </div>
                 <div class="modal-body">
 
-                    <form action="{{ route('Empresa_cadastro_cliente_add', ['empresa' => $empresa->name]) }}" method="POST">
+                    <form action="{{ route('Empresa_cadastro_cliente_add', ['empresa' => $empresa->name]) }}"
+                        method="POST">
                         @csrf
                         <div class="container">
                             <div class="row">
@@ -195,7 +429,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-user"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_nome" name="cliente_nome" placeholder="Nome completo" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_nome"
+                                            name="cliente_nome" placeholder="Nome completo" required>
                                     </div>
                                 </div>
                                 <div class="col-md-6 mb-3">
@@ -203,7 +438,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-map-marked-alt"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_endereco" name="cliente_endereco" placeholder="Rua" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_endereco"
+                                            name="cliente_endereco" placeholder="Rua" required>
                                     </div>
                                 </div>
                             </div>
@@ -213,7 +449,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-building"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_numero" name="cliente_numero" placeholder="N°" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_numero"
+                                            name="cliente_numero" placeholder="N°" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -221,7 +458,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-phone"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_telefone" name="cliente_telefone" placeholder="Celular" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_telefone"
+                                            name="cliente_telefone" placeholder="Celular" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -229,7 +467,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-home"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_bairro" name="cliente_bairro" placeholder="Bairro" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_bairro"
+                                            name="cliente_bairro" placeholder="Bairro" required>
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +478,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-city"></i>
                                         </span>
-                                        <input type="text" class="form-control custom-input" id="cliente_cidade" name="cliente_cidade" placeholder="Cidade" required>
+                                        <input type="text" class="form-control custom-input" id="cliente_cidade"
+                                            name="cliente_cidade" placeholder="Cidade" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -247,7 +487,8 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-solid fa-money-bill-wave"></i>
                                         </span>
-                                        <input type="number" class="form-control custom-input" id="valor_doacao" name="valor_doacao" placeholder="Valor da Doação" required>
+                                        <input type="number" class="form-control custom-input" id="valor_doacao"
+                                            name="valor_doacao" placeholder="Valor da Doação" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -262,7 +503,7 @@
                                     </div>
                                 </div>
                             </div>
-                    
+
                             <div class="row">
                                 <div class="col-md-12 mb-3">
                                     <label>Data vencimento:</label>
@@ -270,19 +511,21 @@
                                         <span class="input-group-text bg-gradient-success text-white">
                                             <i class="fa-regular fa-calendar"></i>
                                         </span>
-                                    <input type="date" class="form-control custom-input" id="data_doacao" name="vencimento" required>
+                                        <input type="date" class="form-control custom-input" id="data_doacao"
+                                            name="vencimento" required>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    
-                        <div class="modal-footer">
-                            <button type="button" class="btn bg-danger text-white" data-dismiss="modal">Fechar</button>
-                            <button type="submit" class="btn bg-gradient-success text-white">Cadastrar</button>
-                        </div>
+
+                            <div class="modal-footer">
+                                <button type="button" class="btn bg-danger text-white"
+                                    data-dismiss="modal">Fechar</button>
+                                <button type="submit" class="btn bg-gradient-success text-white">Cadastrar</button>
+                            </div>
                     </form>
-                    
+
+                </div>
             </div>
         </div>
-    </div>
 
-@endsection
+    @endsection

@@ -24,7 +24,6 @@
             width: 400px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #38414A;
             border: 1px solid #ccc;
         }
 
@@ -65,7 +64,7 @@
     <form action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
         method="POST">
         @csrf
-        <div class="receipt" style="background-color: #38414A; color: white;">
+        <div class="receipt" style="color: black;">
             <div class="header">
                 <img class="logo"
                     src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('logos_empresas/' . $logo))) }}">
@@ -77,17 +76,16 @@
                     <p><strong>Rua 22 com 23 e 25, n° 1329 - Ituiutaba-MG</strong></p>
                 </div>
             </div>
-            <h1 class="header text-white">RECIBO</h1>
+            <h1 class="header">RECIBO</h1>
             <div class="details">
                 <p style="font-size: 30px;"><strong>Recebemos de:<br></strong> {{ $cliente->name }}</p>
                 <p><strong>Endereço:</strong>
                     {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade }}</p>
                 <p><strong>Celular:</strong> {{ $cliente->celular }}</p>
-                <p><strong>Data/Hora:</strong> {{ $data }}</p>
+                <p><strong>Data/Hora:</strong> {{ $data->format('d/m/Y - H:i:s') }}</p>
             </div>
             <div class="details">
-                <p><strong>Referente a:</strong></p>
-                <p>Doação</p>
+                <p><strong>Referente a doação para a instituição: {{ $empresa->name }}</strong></p>
                 <p style="font-size: 30px;"><strong>Valor Total: R$ {{ $cliente->valor }}</strong></p>
             </div>
 

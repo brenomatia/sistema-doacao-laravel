@@ -17,6 +17,9 @@
   <link href="{{ asset('assets/css/argon-dashboard.css?v=1.1.2') }}" rel="stylesheet" />
 </head>
 <style>
+  /* app.css */
+@import '~leaflet/dist/leaflet.css';
+
   /* Estilo do ícone quando o link está ativo */
 .navbar-nav .nav-item.active a i {
   color: #2DCEAB; /* Cor desejada */
@@ -73,23 +76,37 @@
               <i class="fa-solid fa-filter-circle-dollar"></i> A receber
             </a>
           </li>
-          <!--
+          
+          @if(Auth::user()->tipo === 'admin')
+
+          <li class="nav-item mt-3 mb-3 text-center text-gray">ADMINISTRATIVO</li>
+
           <li class="nav-item active">
-            <a class="nav-link" href="">
-              <i class="fa-solid fa-screwdriver-wrench"></i> Administrativo
+            <a class="nav-link" href="{{ route('empresa_metricas', ['empresa' => $empresa->name ]) }}">
+              <i class="fa-solid fa-square-poll-vertical"></i> Métricas
             </a>
           </li>
-        -->
+
           <li class="nav-item active">
             <a class="nav-link" href="{{ route('empresa_usuarios', ['empresa' => $empresa->name ]) }}">
               <i class="fa-solid fa-user-plus"></i> Usuários
             </a>
           </li>
+
+          <li class="nav-item active">
+            <a class="nav-link" href="{{ route('empresa_baixar', ['empresa' => $empresa->name ]) }}">
+              <i class="fa-solid fa-receipt"></i> Baixar recibos
+            </a>
+          </li>
+          
           <li class="nav-item active">
             <a class="nav-link" href="{{ route('empresa_logs', ['empresa' => $empresa->name ]) }}">
               <i class="fa-solid fa-clipboard-list"></i> Logs
             </a>
           </li>
+
+        @endif
+
           <li class="nav-item">
             <a class="nav-link" href="{{ route('Empresa_logout', ['empresa' => $empresa->name ]) }}">
               <div class="btn bg-gradient-success col-12 text-white d-flex align-items-center justify-content-center">
@@ -98,7 +115,6 @@
             </a>
           </li>
         </ul>
-        
       </div>
     </div>
   </nav>

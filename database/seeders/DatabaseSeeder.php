@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Database\Factories\UserFactory;
 
 class DatabaseSeeder extends Seeder
 {
@@ -12,11 +12,21 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // \App\Models\User::factory(10)->create();
+        \App\Models\Cliente::factory(30)->create();
 
-        // \App\Models\User::factory()->create([
-        //     'name' => 'Test User',
-        //     'email' => 'test@example.com',
-        // ]);
+        // Usando a UserFactory para criar uma instância de Cliente
+        \App\Models\Cliente::factory()->create([
+            'name' => 'User teste',
+            'rua' => 'c11',
+            'numero' => '124',
+            'celular' => '34997995401',
+            'bairro' => 'cannã 2',
+            'cidade' => 'ituiutaba-MG',
+            'doador' => '',
+            'tipo' => 'SAE',
+            'valor' => '5',
+            'situacao' => '',
+            'tipo_pagamento' => 'MENSAL',
+        ]);
     }
 }

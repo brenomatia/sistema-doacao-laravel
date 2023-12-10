@@ -55,11 +55,22 @@ Route::middleware(['check-empresa'])->group(function () {
     Route::post('/instituição/{empresa}/cadastro_cliente/primeira/{id}/emitindo_recibo', [EmpresaController::class, 'empresa_cadastro_emitindo_recibo'])->name('empresa_cadastro_emitindo_recibo');
     Route::post('/instituição/{empresa}/cadastro_cliente/primeira/{id}/processando_recibo', [EmpresaController::class, 'empresa_cadastro_processando_recibo'])->name('empresa_cadastro_processando_recibo');
     Route::get('/instituição/{empresa}/logs', [EmpresaController::class, 'empresa_logs'])->name('empresa_logs');
+
+    Route::post('/instituição/{empresa}/logs/pesquisa', [EmpresaController::class, 'empresa_logs_pesquisa'])->name('empresa_logs_pesquisa');
+
     Route::get('/instituição/{empresa}/usuarios', [EmpresaController::class, 'empresa_usuarios'])->name('empresa_usuarios');
     Route::post('/instituição/{empresa}/usuarios/new_user', [EmpresaController::class, 'empresa_new_user'])->name('empresa_new_user');
     Route::post('/instituição/{empresa}/usuarios/view/{id}', [EmpresaController::class, 'empresa_view_user'])->name('empresa_view_user');
     Route::post('/instituição/{empresa}/usuarios/view/{id}/atualizar', [EmpresaController::class, 'empresa_update_user'])->name('empresa_update_user');
     Route::post('/instituição/{empresa}/usuarios/{id}/delete_user', [EmpresaController::class, 'empresa_delete_user'])->name('empresa_delete_user');
+    Route::get('/instituição/{empresa}/baixar_recibos', [EmpresaController::class, 'empresa_baixar'])->name('empresa_baixar');
+    Route::post('/instituição/{empresa}/baixar_recibos/{cliente_id}/{id}', [EmpresaController::class, 'empresa_dar_baixa_em_recibos'])->name('empresa_dar_baixa_em_recibos');
+
+    Route::get('/instituição/{empresa}/termo_sae/{id}', [EmpresaController::class, 'empresa_termo_sae_route'])->name('empresa_termo_sae_route');
+    Route::post('/instituição/{empresa}/termo_sae/{id}/gerando_termo', [EmpresaController::class, 'empresa_gerando_termo_sae'])->name('empresa_gerando_termo_sae');
+
+    Route::get('/instituição/{empresa}/metricas', [EmpresaController::class, 'empresa_metricas'])->name('empresa_metricas');
+    Route::post('/instituição/{empresa}/metricas/pesquisa_personalizada', [EmpresaController::class, 'empresa_metricas_pesquisa'])->name('empresa_metricas_pesquisa');
     /*
     |--------------------------------------------------------------------------
     | GERAL LOGOUT EMPRESA

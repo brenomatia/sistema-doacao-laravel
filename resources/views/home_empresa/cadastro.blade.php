@@ -15,35 +15,12 @@
         <!-- CSS Files -->
         <link href="{{ asset('assets/css/argon-dashboard.css?v=1.1.2') }}" rel="stylesheet" />
     </head>
-  <body>
-    <style>
-        .container {
-            margin-top: 10%;
-        }
+  <body style="background-color: #38414A;">
 
-        .input-icon {
-            font-size: 1.25rem;
-        }
-
-        .form-floating {
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-primary {
-            background-color: #007BFF;
-            border-color: #007BFF;
-        }
-
-        .btn-primary:hover {
-            background-color: #0056b3;
-            border-color: #0056b3;
-        }
-    </style>
-
-    <div class="container">
+    <div class="container" style="margin-top: 5%;">
         <div class="row justify-content-center">
             <div class="col-md-5">
-                <form action="{{ route('Empresa_cadastro_new_user', ['empresa' => $empresa->name]) }}" method="POST" class="p-4 p-md-5 border rounded-3">
+                <form action="{{ route('Empresa_cadastro_new_user', ['empresa' => $empresa->name]) }}" method="POST" class="p-4 p-md-5 border-0 rounded-3">
                     @csrf
                     <div class="text-center" style="margin-bottom: 50px;">
                         <img src="{{ asset('logos_empresas/' . $empresa->logo) }}" class="w-100" alt="Logo">
@@ -66,29 +43,29 @@
                         </div>
                     @endif
 
-                    <div class="form-floating">
+                    <div class="form-floating mb-2">
                         <div class="input-group">
-                            <span class="input-group-text input-icon bg-gradient-danger text-white"><i class="fas fa-user"></i></span>
-                            <input type="text" class="form-control" id="inputnome" name="user_name" placeholder="Nome completo" style="padding: 3%;">
+                            <span class="input-group-text input-icon bg-gradient-success text-white"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control bg-transparent text-white" id="inputnome" name="user_name" placeholder="Nome completo" style="padding: 3%;">
                         </div>
                     </div>
 
-                    <div class="form-floating">
+                    <div class="form-floating mb-2">
                         <div class="input-group">
-                            <span class="input-group-text input-icon bg-gradient-danger text-white"><i class="fas fa-envelope"></i></span>
-                            <input type="email" class="form-control" id="inputemail" name="user_email" placeholder="E-mail" style="padding: 3%;">
+                            <span class="input-group-text input-icon bg-gradient-success text-white"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control bg-transparent text-white" id="inputemail" name="user_email" placeholder="E-mail" style="padding: 3%;">
                         </div>
                     </div>
 
-                    <div class="form-floating">
+                    <div class="form-floating mb-2">
                         <div class="input-group">
-                            <span class="input-group-text input-icon bg-gradient-danger text-white"><i class="fas fa-lock"></i></span>
-                            <input type="password" class="form-control" id="inputpassword" name="user_password" placeholder="Password" style="padding: 3%;">
+                            <span class="input-group-text input-icon bg-gradient-success text-white"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control bg-transparent text-white" id="inputpassword" name="user_password" placeholder="Password" style="padding: 3%;">
                         </div>
                     </div>
 
-                    <button class="btn bg-gradient-danger text-white col-12 mb-2">CADASTRAR</button>
-                    <a href="{{ URL::route('index', ['empresa' => $empresa->name ]) }}"><button type="button" class="btn bg-gradient-danger text-white col-12">VOLTAR</button></a>
+                    <button class="btn bg-gradient-success text-white col-12 mb-2">CADASTRAR</button>
+                    <a href="{{ URL::route('index', ['empresa' => $empresa->name ]) }}"><button type="button" class="btn bg-gradient-success text-white col-12">VOLTAR</button></a>
                 </form>
                 
             </div>

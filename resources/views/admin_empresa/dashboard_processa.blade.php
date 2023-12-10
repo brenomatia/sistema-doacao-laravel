@@ -24,7 +24,6 @@
             width: 400px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #38414A;
             border: 1px solid #ccc;
         }
 
@@ -65,7 +64,8 @@
     <form action="{{ route('empresa_cadastro_processando_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
         method="POST">
         @csrf
-        <div class="receipt" style="background-color: #38414A; color: white;">
+        
+        <div class="receipt" style="color: black;">
             <div class="header">
                 <img class="logo"
                     src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('logos_empresas/' . $logo))) }}">
@@ -77,7 +77,7 @@
                     <p><strong>Rua 22 com 23 e 25, n° 1329 - Ituiutaba-MG</strong></p>
                 </div>
             </div>
-            <h1 class="header text-white">RECIBO</h1>
+            <h1 class="header text-black">RECIBO</h1>
             <div class="details">
                 <p style="font-size: 30px;"><strong>Recebemos de:<br></strong> {{ $cliente->name }}</p>
                 <p><strong>Endereço:</strong>
@@ -98,6 +98,7 @@
                         class="btn bg-gradient-danger text-white col-12 mt-2 @if (isset($isPdf) && $isPdf) hide-on-pdf @endif">VOLTAR</button></a>
 
         </div>
+
 </body>
 
 </html>

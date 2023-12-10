@@ -43,4 +43,10 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+
+    public function mods()
+    {
+        return $this->hasMany(Mod::class, 'name', 'name');
+    }
 }

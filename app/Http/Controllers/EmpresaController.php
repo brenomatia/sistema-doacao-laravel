@@ -7,6 +7,7 @@ use App\Models\Empresa;
 use App\Models\Doacao;
 use App\Models\User;
 use App\Models\Mod;
+use App\Models\EmAberto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Auth;
@@ -145,15 +146,15 @@ class EmpresaController extends Controller
         $credentials = $request->only('email', 'password');
 
         if (auth()->attempt($credentials)) {
-            if (Auth::user()->tipo == "admin") {
 
-                if (!$request->user()) {
-                    return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
-                }
 
-                return redirect()->route('Empresa_dashboard', ['empresa' => $empresa->name]); // Redirecionar para a página de destino após o login
+            if (!$request->user()) {
+                return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
             }
-            return back()->with('error', 'Acesso negado.');
+
+            return redirect()->route('Empresa_dashboard', ['empresa' => $empresa->name]); // Redirecionar para a página de destino após o login
+
+
         }
 
         return back()->with('error', 'Credenciais inválidas. Por favor, tente novamente.');
@@ -188,8 +189,9 @@ class EmpresaController extends Controller
         $clientes_atual = Cliente::whereYear('created_at', Carbon::now()->year)
             ->whereMonth('created_at', Carbon::now()->month)
             ->count();
-        $valor_atual = Cliente::whereYear('created_at', Carbon::now()->year)
+        $valor_atual = EmAberto::whereYear('created_at', Carbon::now()->year)
             ->whereMonth('created_at', Carbon::now()->month)
+            ->where('status', 'FECHADO')
             ->sum('valor');
 
 
@@ -198,8 +200,9 @@ class EmpresaController extends Controller
         $clientes_passado = Cliente::whereYear('created_at', $lastMonthStart->year)
             ->whereMonth('created_at', $lastMonthStart->month)
             ->count();
-        $valor_passado = Cliente::whereYear('created_at', $lastMonthStart->year)
+        $valor_passado = EmAberto::whereYear('created_at', $lastMonthStart->year)
             ->whereMonth('created_at', $lastMonthStart->month)
+            ->where('status', 'FECHADO')
             ->sum('valor');
 
         $tiquete_medio_base_atual = 0;
@@ -234,9 +237,23 @@ class EmpresaController extends Controller
             $tiquete_total = $valor_atual / $valor_passado;
             $porcetagem_tiquete_total = number_format(($tiquete_total - 1) * 100, 2, '.', '');
         }
-
-        return view('admin_empresa.dashboard', compact('empresa', 'tiquete_cliente', 'porcetagem_tiquete_total', 'porcetagem_tiquete_clientes', 'tiquete_medio_base_atual', 'tiquete_medio_base_passado', 'porcentagem_tiquete', 'valor_atual', 'valor_passado', 'clientes_atual', 'clientes_passado'));
+        $ultimosRegistros = Cliente::latest()->limit(5)->get();
+        $ultimosAlteracoes = Mod::latest()->limit(5)->get();
+        return view('admin_empresa.dashboard', compact('ultimosAlteracoes', 'ultimosRegistros', 'empresa', 'tiquete_cliente', 'porcetagem_tiquete_total', 'porcetagem_tiquete_clientes', 'tiquete_medio_base_atual', 'tiquete_medio_base_passado', 'porcentagem_tiquete', 'valor_atual', 'valor_passado', 'clientes_atual', 'clientes_passado'));
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function Empresa_logout(Request $request, $empresa)
     {
@@ -290,8 +307,9 @@ class EmpresaController extends Controller
         }
 
         $clientes = Cliente::all();
+        $doacoes = Doacao::all();
 
-        return view('admin_empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes'));
+        return view('admin_empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes', 'doacoes'));
     }
 
     public function Empresa_cadastro_cliente_add(Request $request, $empresa)
@@ -755,10 +773,13 @@ class EmpresaController extends Controller
             'situacao' => "PRIMEIRA",
         ]);
 
-        $doacao = new Doacao();
-        $doacao->valor = $cliente->valor;
-        $doacao->cliente_id = $cliente->id;
-        $doacao->save();
+        $aberto = new EmAberto();
+        $aberto->cliente_id = $cliente->id;
+        $aberto->valor = $cliente->valor;
+        $aberto->nome_cliente = $cliente->name;
+        $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
+        $aberto->status = "ABERTO";
+        $aberto->save();
 
         $cliente_log = new Mod();
         $cliente_log->name = Auth::user()->name;
@@ -816,9 +837,52 @@ class EmpresaController extends Controller
             ];
         }
 
-        return view('admin_empresa.dashboard_logs', compact('logs', 'empresa'));
+        $users = User::all();
+
+        return view('admin_empresa.dashboard_logs', compact('logs', 'empresa', 'users'));
 
 
+    }
+
+    public function empresa_logs_pesquisa(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $user = User::find($request->input('id'));
+        $logs_geral = Mod::where('name', $user->name)->get();
+
+        $logs = [];
+
+        foreach ($logs_geral as $log) {
+            $logs[] = [
+                'timestamp' => $log->created_at->format('d/m/Y H:i:s'),
+                'name' => $log->name . '',
+                'message' => $log->mod,
+            ];
+        }
+
+        return view('admin_empresa.dashboard_logs_pesquisa', compact('logs', 'empresa', 'user'));
     }
 
     public function empresa_cadastro_processando_recibo(Request $request, $empresa, $id)
@@ -847,18 +911,20 @@ class EmpresaController extends Controller
         }
 
         $cliente = Cliente::find($id);
-        $cliente->created_at = Carbon::parse($cliente->created_at)->addMonth()->format('Y-m-d');
+        $cliente->doador = "EMITIDO";
         $cliente->save();
 
         $logo = $empresa->logo;
         $data = now();
         $isPdf = true; // Indica que o PDF está sendo gerado
 
-        $doacao = new Doacao();
-        $doacao->tipo = "EMITIDO";
-        $doacao->valor = $cliente->valor;
-        $doacao->cliente_id = $cliente->id;
-        $doacao->save();
+        $aberto = new EmAberto();
+        $aberto->cliente_id = $cliente->id;
+        $aberto->valor = $cliente->valor;
+        $aberto->nome_cliente = $cliente->name;
+        $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
+        $aberto->status = "ABERTO";
+        $aberto->save();
 
         $cliente_log = new Mod();
         $cliente_log->name = Auth::user()->name;
@@ -1057,4 +1123,338 @@ class EmpresaController extends Controller
 
         return redirect()->route('empresa_usuarios', ['empresa' => $empresa->name])->with('success', 'Cliente atualizado com sucesso!');
     }
+
+    public function empresa_baixar(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $abertos = EmAberto::where('status', 'ABERTO')->get();
+
+        return view('admin_empresa.dashboard_recibos', compact('empresa', 'abertos'));
+    }
+
+    public function empresa_dar_baixa_em_recibos(Request $request, $empresa, $cliente_id, $id)
+    {
+
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $tipo_pagamento = request('metodo_pagamento');
+
+        $atualizar_status = EmAberto::find($id);
+        $atualizar_status->status = "FECHADO";
+        $atualizar_status->save();
+
+        $atualizar_created_at_clientes = Cliente::find($cliente_id);
+        $atualizar_created_at_clientes->created_at = now();
+        $atualizar_created_at_clientes->save();
+
+        $registrar_doação = new Doacao();
+        $registrar_doação->cliente_id = $cliente_id;
+        $registrar_doação->tipo = $tipo_pagamento;
+        $registrar_doação->valor = $atualizar_created_at_clientes->valor;
+        $registrar_doação->save();
+
+        return back()->with('success', 'Recibo baixado com sucesso!');
+
+    }
+
+    public function empresa_termo_sae_route(Request $request, $empresa, $id)
+    {
+
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $cliente = Cliente::find($id);
+        return view('admin_empresa.dashboard_termo', compact('empresa', 'cliente'));
+    }
+
+    public function empresa_gerando_termo_sae(Request $request, $empresa, $id)
+    {
+
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        $cliente = Cliente::find($id);
+        $cliente->tipo = "SAE";
+        $cliente->save();
+
+        $logo = $empresa->logo;
+        $data = now();
+        $isPdf = true; // Indica que o PDF está sendo gerado
+
+        $cliente_log = new Mod();
+        $cliente_log->name = Auth::user()->name;
+        $cliente_log->mod = 'Gerou o termo da sae para o cliente: ' . $cliente->name . '.';
+        $cliente_log->save();
+
+        $dompdf = new Dompdf();
+
+        // Carregue a view e converta para HTML
+        $html = view('admin_empresa.dashboard_termo', compact('cliente', 'empresa', 'data', 'logo', 'isPdf'))->render();
+
+        // Carregue o HTML no Dompdf
+        $dompdf->loadHtml($html);
+
+        // Renderize o PDF com um nome de arquivo personalizado
+        $dompdf->render();
+        $filename = $cliente->name . '_termosae.pdf'; // Defina o nome do arquivo com base no nome do cliente
+
+        // Exiba o PDF no navegador com o nome de arquivo personalizado
+        return $dompdf->stream($filename);
+    }
+
+    public function empresa_metricas(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
+
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $doacoesMesAtual = Doacao::whereYear('created_at', Carbon::now()->year)
+            ->whereMonth('created_at', Carbon::now()->month)
+            ->sum('valor');
+
+        $doacoesMesPassado = Doacao::whereYear('created_at', Carbon::now()->subMonth()->year)
+            ->whereMonth('created_at', Carbon::now()->subMonth()->month)
+            ->sum('valor');
+
+        $doacoesPorTipo = Doacao::select('tipo', \DB::raw('SUM(valor) as total_valor'))
+            ->groupBy('tipo')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'tipo' => $item->tipo,
+                    'total_valor' => (float) $item->total_valor,
+                ];
+            })
+            ->unique('tipo'); // Garante tipos de doação únicos
+
+        $clientesContribuicao = Cliente::select(
+            'clientes.id',
+            'clientes.name',
+            DB::raw('SUM(doacoes.valor) as contribuicao_total')
+        )
+            ->leftJoin('doacoes', 'clientes.id', '=', 'doacoes.cliente_id')
+            ->groupBy('clientes.id', 'clientes.name')
+            ->orderByDesc('contribuicao_total')
+            ->take(5) // Obter apenas os top 5
+            ->get();
+
+        $statusDoacoesEmAberto = EmAberto::select(
+            'status',
+            DB::raw('COUNT(*) as quantidade')
+        )
+            ->groupBy('status')
+            ->get();
+
+
+
+        $projecoes = [];
+
+        // Calcular a soma do mês atual
+        $dataAtual = now();
+        $primeiroDiaMesAtual = $dataAtual->firstOfMonth()->format('Y-m-d');
+        $ultimoDiaMesAtual = $dataAtual->lastOfMonth()->format('Y-m-d');
+
+        $somaMesAtual = Cliente::whereBetween('created_at', [$primeiroDiaMesAtual, $ultimoDiaMesAtual])
+            ->sum('valor');
+
+        // Calcular projeção para o próximo mês
+        $dataProximoMes = now()->addMonth();
+        $primeiroDiaProximoMes = $dataProximoMes->firstOfMonth()->format('Y-m-d');
+        $ultimoDiaProximoMes = $dataProximoMes->lastOfMonth()->format('Y-m-d');
+
+        $projecaoProximoMes = [
+            'data' => $dataProximoMes->format('M Y'),
+            'valor' => $somaMesAtual,
+        ];
+
+        $projecoes[] = $projecaoProximoMes;
+
+        return view('admin_empresa.dashboard_metricas', compact('projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
+    }
+
+    public function empresa_metricas_pesquisa(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
+
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        // Agora vamos adicionar o código para as métricas com as datas personalizadas
+        $dataInicio = Carbon::parse($request->input('data_inicio'))->format('Y-m-d');
+        $dataFim = Carbon::parse($request->input('data_fim'))->format('Y-m-d');
+
+        $doacoesMesAtual = Doacao::whereDate('created_at', [$dataInicio, $dataFim])->sum('valor');
+
+        $doacoesMesPassado = Doacao::whereDate('created_at', [Carbon::parse($dataInicio)->subMonth(), Carbon::parse($dataFim)->subMonth()])
+            ->sum('valor');
+
+        $doacoesPorTipo = Doacao::whereDate('created_at', [$dataInicio, $dataFim])
+            ->select('tipo', \DB::raw('SUM(valor) as total_valor'))
+            ->groupBy('tipo')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'tipo' => $item->tipo,
+                    'total_valor' => (float) $item->total_valor,
+                ];
+            })
+            ->unique('tipo')
+            ->values(); // adicionado ->values() para reindexar o array numericamente
+
+        $clientesContribuicao = Cliente::select(
+            'clientes.id',
+            'clientes.name',
+            DB::raw('SUM(doacoes.valor) as contribuicao_total')
+        )
+            ->leftJoin('doacoes', 'clientes.id', '=', 'doacoes.cliente_id')
+            ->whereDate('doacoes.created_at', [$dataInicio, $dataFim])
+            ->groupBy('clientes.id', 'clientes.name')
+            ->orderByDesc('contribuicao_total')
+            ->take(5)
+            ->get();
+
+        $statusDoacoesEmAberto = EmAberto::whereDate('created_at', [$dataInicio, $dataFim])
+            ->select(
+                'status',
+                DB::raw('COUNT(*) as quantidade')
+            )
+            ->groupBy('status')
+            ->get();
+
+        $projecoes = [];
+
+        // Calcular a soma para o período fornecido
+        $somaPeriodo = Cliente::whereDate('created_at', [$dataInicio, $dataFim])
+            ->sum('valor');
+
+        // Calcular projeção para o próximo mês
+        $dataProximoMes = Carbon::parse($dataFim)->addMonth();
+        $primeiroDiaProximoMes = $dataProximoMes->firstOfMonth()->format('Y-m-d');
+        $ultimoDiaProximoMes = $dataProximoMes->lastOfMonth()->format('Y-m-d');
+
+        $projecaoProximoMes = [
+            'data' => $dataProximoMes->format('M Y'),
+            'valor' => $somaPeriodo,
+        ];
+
+        $projecoes[] = $projecaoProximoMes;
+
+        return view('admin_empresa.dashboard_metricas_pesquisa', compact('projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
+    }
+
+
 }
