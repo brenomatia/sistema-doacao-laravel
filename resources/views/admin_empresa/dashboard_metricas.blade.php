@@ -21,12 +21,12 @@
                             <label for="data_inicio">Data de Início:</label>
                             <input type="date" name="data_inicio" class="form-control" style="color: black;">
                         </div>
-                    
+
                         <div class="form-group">
                             <label for="data_fim">Data de Fim:</label>
                             <input type="date" name="data_fim" class="form-control" style="color: black;">
                         </div>
-                    
+
                         <button type="submit" class="btn bg-gradient-success col-12 text-white">Buscar dados</button>
                     </form>
                 </div>
@@ -48,7 +48,7 @@
 
         <div class="col-md-6">
             <div class="card p-3">
-                
+
                 <canvas id="graficoDistribuicaoPorTipo" style="width: 400px; height: 400px;"></canvas>
 
             </div>
@@ -56,26 +56,17 @@
     </div>
 </div>
 
+
 <div class="container col-12 p-3">
     <div class="row">
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Status das Doações em Aberto</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="graficoStatusDoacoesEmAberto" style="width: 400px; height: 400px;"></canvas>
-                </div>
+            <div class="card p-3">
+                <canvas id="graficoStatusDoacoesEmAberto" style="width: 400px; height: 400px;"></canvas>
             </div>
         </div>
         <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h5>Comparação de valores</h5>
-                </div>
-                <div class="card-body">
-                    <canvas id="graficoPlanejamentoFuturo" style="width: 400px; height: 220px;"></canvas>
-                </div>
+            <div class="card p-3">
+                <canvas id="graficoPlanejamentoFuturo" style="width: 400px; height: 400px;"></canvas>
             </div>
         </div>
     </div>
@@ -94,7 +85,8 @@
                             <tr>
                                 <th class="border-0 bg-gradient-success rounded-left text-center">Posição</th>
                                 <th class="border-0 bg-gradient-success text-center">Nome do Cliente</th>
-                                <th class="border-0 bg-gradient-success rounded-right text-center">Contribuição Total (R$)</th>
+                                <th class="border-0 bg-gradient-success rounded-right text-center">Contribuição Total
+                                    (R$)</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,7 +94,8 @@
                             <tr>
                                 <td class="border-0 text-center">{{ $index + 1 }}°</td>
                                 <td class="border-0 text-center">{{ $cliente->name }}</td>
-                                <td class="border-0 text-center" style="color: #2DCEAB;">R$ {{ number_format($cliente->contribuicao_total, 2, ',', '.') }}</td>
+                                <td class="border-0 text-center" style="color: #2DCEAB;">R$
+                                    {{ number_format($cliente->contribuicao_total, 2, ',', '.') }}</td>
                             </tr>
                             @endforeach
                         </tbody>
@@ -145,7 +138,7 @@
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             var label = context.dataset.label || '';
                             if (label) {
                                 label += ': ';
@@ -175,11 +168,11 @@
     var myChart = new Chart(ctx, {
         type: 'pie',
         data: {
-            labels: doacoesPorTipo.map(function(item) {
+            labels: doacoesPorTipo.map(function (item) {
                 return item.tipo;
             }),
             datasets: [{
-                data: doacoesPorTipo.map(function(item) {
+                data: doacoesPorTipo.map(function (item) {
                     return parseFloat(item.total_valor);
                 }),
                 backgroundColor: [
@@ -199,7 +192,7 @@
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             var label = context.label || '';
                             if (label) {
                                 label += ': ';
@@ -226,12 +219,12 @@
     var myChart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: statusDoacoesEmAberto.map(function(status) {
+            labels: statusDoacoesEmAberto.map(function (status) {
                 return status.status;
             }),
             datasets: [{
                 label: 'Quantidade',
-                data: statusDoacoesEmAberto.map(function(status) {
+                data: statusDoacoesEmAberto.map(function (status) {
                     return status.quantidade;
                 }),
                 backgroundColor: [
@@ -275,6 +268,8 @@
             }]
         },
         options: {
+            responsive: true,
+            maintainAspectRatio: false,
             scales: {
                 y: {
                     beginAtZero: true
@@ -283,7 +278,7 @@
             plugins: {
                 tooltip: {
                     callbacks: {
-                        label: function(context) {
+                        label: function (context) {
                             var label = 'R$' + context.parsed.y.toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
                             return label;
                         }

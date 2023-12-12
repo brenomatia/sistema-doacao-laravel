@@ -1393,16 +1393,15 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        // Agora vamos adicionar o código para as métricas com as datas personalizadas
-        $dataInicio = Carbon::parse($request->input('data_inicio'))->format('Y-m-d');
-        $dataFim = Carbon::parse($request->input('data_fim'))->format('Y-m-d');
+        $dataInicio = Carbon::parse($request->input('data_inicio'))->startOfMonth();
+        $dataFim = Carbon::parse($request->input('data_fim'))->endOfMonth();
 
-        $doacoesMesAtual = Doacao::whereDate('created_at', [$dataInicio, $dataFim])->sum('valor');
+        $doacoesMesAtual = Doacao::whereBetween('created_at', [$dataInicio, $dataFim])->sum('valor');
 
-        $doacoesMesPassado = Doacao::whereDate('created_at', [Carbon::parse($dataInicio)->subMonth(), Carbon::parse($dataFim)->subMonth()])
+        $doacoesMesPassado = Doacao::whereBetween('created_at', [Carbon::parse($dataInicio)->subMonth(), Carbon::parse($dataFim)->subMonth()])
             ->sum('valor');
 
-        $doacoesPorTipo = Doacao::whereDate('created_at', [$dataInicio, $dataFim])
+        $doacoesPorTipo = Doacao::whereBetween('created_at', [$dataInicio, $dataFim])
             ->select('tipo', \DB::raw('SUM(valor) as total_valor'))
             ->groupBy('tipo')
             ->get()
@@ -1413,7 +1412,7 @@ class EmpresaController extends Controller
                 ];
             })
             ->unique('tipo')
-            ->values(); // adicionado ->values() para reindexar o array numericamente
+            ->values();
 
         $clientesContribuicao = Cliente::select(
             'clientes.id',
@@ -1421,13 +1420,13 @@ class EmpresaController extends Controller
             DB::raw('SUM(doacoes.valor) as contribuicao_total')
         )
             ->leftJoin('doacoes', 'clientes.id', '=', 'doacoes.cliente_id')
-            ->whereDate('doacoes.created_at', [$dataInicio, $dataFim])
+            ->whereBetween('doacoes.created_at', [$dataInicio, $dataFim])
             ->groupBy('clientes.id', 'clientes.name')
             ->orderByDesc('contribuicao_total')
             ->take(5)
             ->get();
 
-        $statusDoacoesEmAberto = EmAberto::whereDate('created_at', [$dataInicio, $dataFim])
+        $statusDoacoesEmAberto = EmAberto::whereBetween('created_at', [$dataInicio, $dataFim])
             ->select(
                 'status',
                 DB::raw('COUNT(*) as quantidade')
@@ -1437,15 +1436,10 @@ class EmpresaController extends Controller
 
         $projecoes = [];
 
-        // Calcular a soma para o período fornecido
-        $somaPeriodo = Cliente::whereDate('created_at', [$dataInicio, $dataFim])
+        $somaPeriodo = Cliente::whereBetween('created_at', [$dataInicio, $dataFim])
             ->sum('valor');
 
-        // Calcular projeção para o próximo mês
-        $dataProximoMes = Carbon::parse($dataFim)->addMonth();
-        $primeiroDiaProximoMes = $dataProximoMes->firstOfMonth()->format('Y-m-d');
-        $ultimoDiaProximoMes = $dataProximoMes->lastOfMonth()->format('Y-m-d');
-
+        $dataProximoMes = $dataFim->copy()->addMonth();
         $projecaoProximoMes = [
             'data' => $dataProximoMes->format('M Y'),
             'valor' => $somaPeriodo,
@@ -1455,6 +1449,8 @@ class EmpresaController extends Controller
 
         return view('admin_empresa.dashboard_metricas_pesquisa', compact('projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
     }
+
+
 
 
 }
