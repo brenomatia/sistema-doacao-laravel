@@ -7,9 +7,10 @@
 <div class="container mt-5">
     <div class="log-container">
 
-        <a href="{{ route('empresa_logs', ['empresa'=>$empresa->name]) }}"><button type="submit" class="btn bg-gradient-success text-white mt-3 mb-4 col-12">VOLTAR</button></a>
+        <a href="{{ route('empresa_logs', ['empresa'=>$empresa->name]) }}"><button type="submit"
+                class="btn bg-gradient-success text-white mt-3 mb-4 col-12">VOLTAR</button></a>
 
-        <h2 class="mb-5">Log de Ações</h2>
+        <h2 class="mb-5">Registro de atividades</h2>
         <table class="log-table">
             <tbody>
                 <tr>

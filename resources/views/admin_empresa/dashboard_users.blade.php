@@ -81,7 +81,7 @@
                 <tbody>
                     <!-- Exemplo de linha na tabela -->
                     @foreach ($users as $user)
-                        @if ($user->name != Auth::user()->name)
+                        @if ($user->tipo != 'dev')
                             <tr>
 
                                 <td class="align-middle text-center">{{ $user->name }}</td>

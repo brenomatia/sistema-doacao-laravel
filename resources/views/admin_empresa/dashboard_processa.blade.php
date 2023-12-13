@@ -21,7 +21,7 @@
         }
 
         .receipt {
-            width: 400px;
+            width: 500px;
             margin: 0 auto;
             padding: 20px;
             border: 1px solid #ccc;
@@ -61,10 +61,11 @@
 </head>
 
 <body>
-    <form action="{{ route('empresa_cadastro_processando_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
+    <form
+        action="{{ route('empresa_cadastro_processando_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
         method="POST">
         @csrf
-        
+
         <div class="receipt" style="color: black;">
             <div class="header">
                 <img class="logo"
@@ -72,30 +73,32 @@
                 <div class="info">
                     <p><strong>Associação Coração Acolhedor</strong></p>
                     <p><strong>CNPJ 29.450.986/0001-83</strong></p>
-                    <p><strong>(34) 3268-1758</strong></p>
-                    <p><strong>(34) 99680-9115</strong></p>
-                    <p><strong>Rua 22 com 23 e 25, n° 1329 - Ituiutaba-MG</strong></p>
+                    <p><strong>associacaocoracaoacolhedor@gmail.com</strong></p>
+                    <p><strong>WhatsApp: (34) 99680-9115</strong></p>
+                    <p><strong>Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 -
+                            Ituiutaba-MG</strong></p>
                 </div>
             </div>
             <h1 class="header text-black">RECIBO</h1>
             <div class="details">
                 <p style="font-size: 30px;"><strong>Recebemos de:<br></strong> {{ $cliente->name }}</p>
                 <p><strong>Endereço:</strong>
-                    {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade }}</p>
+                    {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade }}
+                </p>
                 <p><strong>Celular:</strong> {{ $cliente->celular }}</p>
                 <p><strong>Data/Hora:</strong> {{ $data }}</p>
             </div>
             <div class="details">
-                <p><strong>Referente a:</strong></p>
-                <p>Doação</p>
+                <p><strong>Referente a doação para a instituição: {{ $empresa->name }}</strong></p>
+                <p><strong>Recibo ID: {{ $cliente->id }}</strong></p>
                 <p style="font-size: 30px;"><strong>Valor Total: R$ {{ $cliente->valor }}</strong></p>
             </div>
 
-                <button type="submit"
-                    class="btn bg-gradient-success text-white col-12 mt-2 @if (isset($isPdf) && $isPdf) hide-on-pdf @endif">GERAR
-                    RECIBO</button>
-                <a href="{{ route('empresa_areceber', ['empresa' => $empresa->name]) }}"><button type="button"
-                        class="btn bg-gradient-danger text-white col-12 mt-2 @if (isset($isPdf) && $isPdf) hide-on-pdf @endif">VOLTAR</button></a>
+            <button type="submit"
+                class="btn bg-gradient-success text-white col-12 mt-2 @if (isset($isPdf) && $isPdf) hide-on-pdf @endif">GERAR
+                RECIBO</button>
+            <a href="{{ route('empresa_areceber', ['empresa' => $empresa->name]) }}"><button type="button"
+                    class="btn bg-gradient-danger text-white col-12 mt-2 @if (isset($isPdf) && $isPdf) hide-on-pdf @endif">VOLTAR</button></a>
 
         </div>
 

@@ -18,22 +18,25 @@
 </head>
 <style>
   /* app.css */
-@import '~leaflet/dist/leaflet.css';
+  @import '~leaflet/dist/leaflet.css';
 
   /* Estilo do ícone quando o link está ativo */
-.navbar-nav .nav-item.active a i {
-  color: #2DCEAB; /* Cor desejada */
-}
-.navbar-nav .nav-item .nav-link{
-  color: white;
-}
+  .navbar-nav .nav-item.active a i {
+    color: #2DCEAB;
+    /* Cor desejada */
+  }
+
+  .navbar-nav .nav-item .nav-link {
+    color: white;
+  }
 </style>
 
 <body>
   <nav class="navbar navbar-vertical fixed-left navbar-expand-md" id="sidenav-main" style="background-color: #38414A;">
     <div class="container-fluid">
       <!-- Toggler -->
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidenav-collapse-main" aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle navigation">
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#sidenav-collapse-main"
+        aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle navigation">
         <i class="fa-solid fa-bars bg-gradient-success text-white p-3 rounded"></i>
       </button>
 
@@ -52,7 +55,8 @@
               </a>
             </div>
             <div class="col-6 collapse-close">
-              <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#sidenav-collapse-main" aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle sidenav">
+              <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#sidenav-collapse-main"
+                aria-controls="sidenav-main" aria-expanded="false" aria-label="Toggle sidenav">
                 <span></span>
                 <span></span>
               </button>
@@ -76,8 +80,8 @@
               <i class="fa-solid fa-filter-circle-dollar"></i> A receber
             </a>
           </li>
-          
-          @if(Auth::user()->tipo === 'admin')
+
+          @if(Auth::user()->tipo === 'admin' || Auth::user()->tipo === 'dev')
 
           <li class="nav-item mt-3 mb-3 text-center text-gray">ADMINISTRATIVO</li>
 
@@ -98,14 +102,14 @@
               <i class="fa-solid fa-receipt"></i> Baixar recibos
             </a>
           </li>
-          
+
           <li class="nav-item active">
             <a class="nav-link" href="{{ route('empresa_logs', ['empresa' => $empresa->name ]) }}">
-              <i class="fa-solid fa-clipboard-list"></i> Logs
+              <i class="fa-solid fa-clipboard-list"></i> Produtividade
             </a>
           </li>
 
-        @endif
+          @endif
 
           <li class="nav-item">
             <a class="nav-link" href="{{ route('Empresa_logout', ['empresa' => $empresa->name ]) }}">
@@ -127,13 +131,14 @@
 
     <!-- Navbar -->
     <nav class="navbar navbar-expand-md" style="background-color: #38414A;">
-     
+
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
 
           <li class="nav-item dropdown justify-content-center">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                <i class="fa-solid fa-gears" style="color: #2DCEAB; font-size: 20px;"></i>
+            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown"
+              aria-haspopup="true" aria-expanded="false">
+              <i class="fa-solid fa-gears" style="color: #2DCEAB; font-size: 20px;"></i>
             </a>
             <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
               <a class="dropdown-item" href="{{ route('Empresa_logout', ['empresa' => $empresa->name ]) }}">

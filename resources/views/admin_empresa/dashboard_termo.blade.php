@@ -59,14 +59,32 @@
         Ituiutaba, <strong>{{ $cliente->created_at->format('d/m/Y') }}</strong>, Doador <strong>{{ $cliente->name }}</strong><br>
         Obras Sociais de Associação Coração Acolhedor
     </p>
-    <div style="border: 1px solid black; padding: 2%;">
-    <strong>
-    <p>VIA CLIENTE</p>
-    <p>Doador: {{ $cliente->name }}</p>
-    <p>Endereço: {{ $cliente->rua }} - {{ $cliente->numero }}, {{ $cliente->bairro }}, {{ $cliente->cidade }}</p>
-    <p>Valor: R$ {{ $cliente->valor }}</p>
-    <p>ID: 2024{{ $cliente->id}}</p>
+
+
+    <div class="container p-3" style="border: 0.5px solid black; font-size: 12px!important;">
+        <div class="row">
+            <div class="col-md-6">
+                <strong>
+                    <p>VIA CLIENTE</p>
+                    <p>Doador: {{ $cliente->name }}</p>
+                    <p>Endereço: {{ $cliente->rua }} - {{ $cliente->numero }}, {{ $cliente->bairro }}, {{ $cliente->cidade }}</p>
+                    <p>Valor: R$ {{ $cliente->valor }}</p>
+                    <p>ID: 2024{{ $cliente->id}}</p>
+                </strong>
+            </div>
+    
+            <div class="col-md-6">
+                <div class="info">
+                    <p><strong>Associação Coração Acolhedor</strong></p>
+                    <p><strong>CNPJ 29.450.986/0001-83</strong></p>
+                    <p><strong>associacaocoracaoacolhedor@gmail.com</strong></p>
+                    <p><strong>WhatsApp: (34) 99680-9115</strong></p>
+                    <p><strong>Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG</strong></p>
+                </div>
+            </div>
+        </div>
     </div>
+
     </strong>
     <form action="{{ route('empresa_gerando_termo_sae', ['empresa'=>$empresa->name, 'id'=>$cliente->id ])}}" method="POST">
         @csrf

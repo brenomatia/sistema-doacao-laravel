@@ -340,16 +340,10 @@ class EmpresaController extends Controller
         // Validação dos campos do formulário
         $request->validate([
             'cliente_nome' => 'required|string|max:255',
-            'cliente_endereco' => 'required|string|max:255',
-            'cliente_numero' => 'required|string|max:10',
             'cliente_telefone' => 'required|string|max:15',
-            'cliente_bairro' => 'required|string|max:100',
-            'cliente_cidade' => 'required|string|max:100',
-            'cliente_cep' => 'nullable|string|max:8',
-            'cliente_pagamento' => 'required|string',
+            'valor_doacao' => 'required|numeric', // Alterado para numeric para o campo de valor
+            'vencimento' => 'required|date',
         ]);
-
-        //dd($request->all());
 
         // Cria um novo objeto Cliente com base nos dados do formulário
         $cliente = new Cliente([
@@ -360,14 +354,16 @@ class EmpresaController extends Controller
             'bairro' => $request->input('cliente_bairro'),
             'cidade' => $request->input('cliente_cidade'),
             'valor' => $request->input('valor_doacao'),
-            'tipo_pagamento' => $request->input('cliente_pagamento'),
+            'created_at' => $request->input('vencimento')
         ]);
 
         $cliente->save();
 
         $cliente_log = new Mod();
         $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Cadastrou o cliente: ' . $request->input('cliente_nome') . '.';
+        $cliente_log->tipo = "CADASTRO";
+        $cliente_log->cliente_id = Auth::user()->id;
+        $cliente_log->registro_acao = 'Cadastrou o cliente: ' . $request->input('cliente_nome') . '.';
         $cliente_log->save();
 
 
@@ -404,11 +400,6 @@ class EmpresaController extends Controller
 
         $historico = Doacao::where('cliente_id', $id);
         $historico->delete();
-
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Deletou o cliente: ' . $cliente->name . '.';
-        $cliente_log->save();
 
         return redirect()->route('Empresa_cadastro_cliente', ['empresa' => $empresa->name])->with('success', 'Sucesso, Cliente excluído.');
 
@@ -497,11 +488,6 @@ class EmpresaController extends Controller
 
         // Salve as alterações no banco de dados
         $cliente->save();
-
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Atualizou o cliente: ' . $request->input('cliente_nome') . '.';
-        $cliente_log->save();
 
         if ($cliente) {
             return redirect()->route('Empresa_cadastro_cliente', ['empresa' => $empresa->name])->with('success', 'Cliente atualizado(a) com sucesso!');
@@ -783,7 +769,9 @@ class EmpresaController extends Controller
 
         $cliente_log = new Mod();
         $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
+        $cliente_log->tipo = "GEROU RECIBO";
+        $cliente_log->cliente_id = Auth::user()->id;
+        $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
         $cliente_log->save();
 
         $dompdf = new Dompdf();
@@ -833,13 +821,42 @@ class EmpresaController extends Controller
             $logs[] = [
                 'timestamp' => $log->created_at->format('d/m/Y H:i:s'),
                 'name' => $log->name . ' (admin)',
-                'message' => $log->mod,
+                'message' => $log->registro_acao,
             ];
         }
 
         $users = User::all();
 
-        return view('admin_empresa.dashboard_logs', compact('logs', 'empresa', 'users'));
+        // Obter a data de início do mês corrente
+        $dataInicio = Carbon::now()->startOfMonth();
+
+        // Obter a data de término do mês corrente
+        $dataFim = Carbon::now()->endOfMonth();
+
+        // Contar os cadastros no intervalo de datas
+        $totalCadastro = Mod::where('tipo', 'CADASTRO')
+            ->whereBetween('created_at', [$dataInicio, $dataFim])
+            ->count();
+
+        // Obter a data de início do mês anterior
+        $dataInicioMesAnterior = Carbon::now()->subMonth()->startOfMonth();
+
+        // Obter a data de término do mês anterior
+        $dataFimMesAnterior = Carbon::now()->subMonth()->endOfMonth();
+
+        // Contar os cadastros no intervalo de datas do mês anterior
+        $totalCadastroMesAnterior = Mod::where('tipo', 'CADASTRO')
+            ->whereBetween('created_at', [$dataInicioMesAnterior, $dataFimMesAnterior])
+            ->count();
+
+        // Calcular a porcentagem, evitando divisão por zero
+        $porcentagem_tiquete_clientes = 0;
+
+        if ($totalCadastroMesAnterior > 0) {
+            $porcentagem_tiquete_clientes = ($totalCadastro / $totalCadastroMesAnterior) * 100;
+        }
+
+        return view('admin_empresa.dashboard_logs', compact('logs', 'empresa', 'users', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes'));
 
 
     }
@@ -878,7 +895,7 @@ class EmpresaController extends Controller
             $logs[] = [
                 'timestamp' => $log->created_at->format('d/m/Y H:i:s'),
                 'name' => $log->name . '',
-                'message' => $log->mod,
+                'message' => $log->registro_acao,
             ];
         }
 
@@ -928,7 +945,9 @@ class EmpresaController extends Controller
 
         $cliente_log = new Mod();
         $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
+        $cliente_log->tipo = "GEROU RECIBO";
+        $cliente_log->cliente_id = Auth::user()->id;
+        $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
         $cliente_log->save();
 
         $dompdf = new Dompdf();
@@ -1008,11 +1027,6 @@ class EmpresaController extends Controller
         $users->password = bcrypt($request->input('user_password'));
         $users->save();
 
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Cadastrou o cliente: ' . $request->input('user_name') . '.';
-        $cliente_log->save();
-
         return back()->with('success', 'Cadastro realizado com sucesso!');
 
     }
@@ -1080,11 +1094,6 @@ class EmpresaController extends Controller
         $newUser->password = bcrypt(request('user_password'));
         $newUser->save();
 
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Atualizou o cliente: ' . $request->input('user_name') . '.';
-        $cliente_log->save();
-
         return redirect()->route('empresa_usuarios', ['empresa' => $empresa->name])->with('success', 'Cliente atualizado com sucesso!');
     }
 
@@ -1115,11 +1124,6 @@ class EmpresaController extends Controller
 
         $deleteUser = User::find($id);
         $deleteUser->delete();
-
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Deletou o cliente: ' . $deleteUser->name . '.';
-        $cliente_log->save();
 
         return redirect()->route('empresa_usuarios', ['empresa' => $empresa->name])->with('success', 'Cliente atualizado com sucesso!');
     }
@@ -1190,6 +1194,14 @@ class EmpresaController extends Controller
         $atualizar_created_at_clientes->created_at = now();
         $atualizar_created_at_clientes->save();
 
+        // PAREI AQUI --------------------------------------------------------------------------------------------------------------
+        $cliente_log = new Mod();
+        $cliente_log->name = $atualizar_status->nome_cliente;
+        $cliente_log->tipo = "FINALIZADO";
+        $cliente_log->cliente_id = $atualizar_status->cliente_id;
+        $cliente_log->registro_acao = 'Finalizou o recibo do cliente: ' . $atualizar_status->nome_cliente . '.';
+        $cliente_log->save();
+
         $registrar_doação = new Doacao();
         $registrar_doação->cliente_id = $cliente_id;
         $registrar_doação->tipo = $tipo_pagamento;
@@ -1259,11 +1271,6 @@ class EmpresaController extends Controller
         $logo = $empresa->logo;
         $data = now();
         $isPdf = true; // Indica que o PDF está sendo gerado
-
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->mod = 'Gerou o termo da sae para o cliente: ' . $cliente->name . '.';
-        $cliente_log->save();
 
         $dompdf = new Dompdf();
 

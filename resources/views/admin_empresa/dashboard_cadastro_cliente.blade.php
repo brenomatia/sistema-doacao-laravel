@@ -157,7 +157,12 @@
                     <td class="align-middle text-center">
                         {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero }}</td>
                     <td class="align-middle text-center">{{ $cliente->celular }}</td>
-                    <td class="align-middle text-center">{{ $cliente->tipo_pagamento }}</td>
+                    @if($cliente->tipo == "SAE")
+                    <td class="align-middle text-center"><img src="{{ asset('img/sae.png') }}"
+                            style="max-width: 100px;"></td>
+                    @else
+                    <td class="align-middle text-center">MENSAL</td>
+                    @endif
                     <td class="align-middle text-center">R$ {{ $cliente->valor }}</td>
                     <td class="align-middle text-center">{{ $cliente->created_at->format('d/m/Y') }}</td>
                     <td class="align-middle text-center">
@@ -453,7 +458,7 @@
                                         <i class="fa-solid fa-map-marked-alt"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_rua_cadastro"
-                                        name="cliente_endereco" placeholder="Rua" required>
+                                        name="cliente_endereco" placeholder="Rua">
                                 </div>
                             </div>
                         </div>
@@ -464,7 +469,7 @@
                                         <i class="fa-solid fa-building"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_numero"
-                                        name="cliente_numero" placeholder="N°" required>
+                                        name="cliente_numero" placeholder="N°">
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -482,7 +487,7 @@
                                         <i class="fa-solid fa-home"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_bairro_cadastro"
-                                        name="cliente_bairro" placeholder="Bairro" required>
+                                        name="cliente_bairro" placeholder="Bairro">
                                 </div>
                             </div>
                         </div>
@@ -493,7 +498,7 @@
                                         <i class="fa-solid fa-city"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_cidade_cadastro"
-                                        name="cliente_cidade" placeholder="Cidade" required>
+                                        name="cliente_cidade" placeholder="Cidade">
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -510,7 +515,7 @@
                                     <span class="input-group-text bg-gradient-primary text-white">
                                         CEP
                                     </span>
-                                    <input type="number" class="form-control" id="cep" name="cep" required
+                                    <input type="number" class="form-control" id="cep" name="cep"
                                         style="padding: 0% 2%;" maxlength="8" oninput="buscarCEP()">
                                 </div>
                             </div>
@@ -543,36 +548,36 @@
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 
     <script>
-    function buscarCEP() {
-        var cep = $('#cep').val().replace(/\D/g, ''); // Remove non-numeric characters
-        if (cep.length !== 8) {
-            return; // Invalid CEP length
-        }
-
-        // Make an AJAX request to the Viacep API
-        $.ajax({
-            url: 'https://viacep.com.br/ws/' + cep + '/json/',
-            type: 'GET',
-            dataType: 'json',
-            success: function (data) {
-                console.log('API Response:', data); // Log the entire data object
-
-                if (data) {
-                    // Check if the expected properties are present in the data object
-                    if ('localidade' in data && 'uf' in data && 'bairro' in data && 'logradouro' in data) {
-                        // Update the address fields with the retrieved data
-                        $('#cliente_cidade_cadastro').val(data.localidade + ' - ' + data.uf); // City + State
-                        $('#cliente_bairro_cadastro').val(data.bairro); // Neighborhood
-                        $('#cliente_rua_cadastro').val(data.logradouro); // Street
-                        og('Incomplete or unexpected data structure received from the API.');
-                    }
-                }
-            },
-            error: function () {
-                console.log('Error fetching address information.');
+        function buscarCEP() {
+            var cep = $('#cep').val().replace(/\D/g, ''); // Remove non-numeric characters
+            if (cep.length !== 8) {
+                return; // Invalid CEP length
             }
-        });
-    }
+
+            // Make an AJAX request to the Viacep API
+            $.ajax({
+                url: 'https://viacep.com.br/ws/' + cep + '/json/',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    console.log('API Response:', data); // Log the entire data object
+
+                    if (data) {
+                        // Check if the expected properties are present in the data object
+                        if ('localidade' in data && 'uf' in data && 'bairro' in data && 'logradouro' in data) {
+                            // Update the address fields with the retrieved data
+                            $('#cliente_cidade_cadastro').val(data.localidade + ' - ' + data.uf); // City + State
+                            $('#cliente_bairro_cadastro').val(data.bairro); // Neighborhood
+                            $('#cliente_rua_cadastro').val(data.logradouro); // Street
+                            og('Incomplete or unexpected data structure received from the API.');
+                        }
+                    }
+                },
+                error: function () {
+                    console.log('Error fetching address information.');
+                }
+            });
+        }
     </script>
 
 

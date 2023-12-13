@@ -13,7 +13,9 @@ return new class extends Migration {
         Schema::create('empresa_logs', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('mod');
+            $table->string('tipo');
+            $table->string('cliente_id');
+            $table->string('registro_acao');
             $table->timestamps();
         });
     }

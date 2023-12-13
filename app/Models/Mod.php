@@ -14,7 +14,9 @@ class Mod extends Model
 
     protected $fillable = [
         'name',
-        'mod',
+        'tipo',
+        'cliente_id',
+        'registro_acao',
     ];
 
 }
