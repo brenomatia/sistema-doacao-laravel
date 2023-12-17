@@ -1437,7 +1437,31 @@ class EmpresaController extends Controller
 
         $projecoes[] = $projecaoProximoMes;
 
-        return view('admin_empresa.dashboard_metricas', compact('projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
+        // Mês atual
+        $total_cadastros_sae = Cliente::whereBetween('created_at', [$primeiroDiaMesAtual, $ultimoDiaMesAtual])->where('tipo', 'SAE')->count();
+        $total_valor_sae = Cliente::whereBetween('created_at', [$primeiroDiaMesAtual, $ultimoDiaMesAtual])->where('tipo', 'SAE')->sum('valor');
+
+        // Mês passado
+        $mesPassado_total_cadastros_sae = Cliente::whereBetween('created_at', [
+            Carbon::now()->subMonth()->startOfMonth(),
+            Carbon::now()->subMonth()->endOfMonth()
+        ])->where('tipo', 'SAE')->count();
+
+        $mesPassado_total_valor_sae = Cliente::whereBetween('created_at', [
+            Carbon::now()->subMonth()->startOfMonth(),
+            Carbon::now()->subMonth()->endOfMonth()
+        ])->where('tipo', 'SAE')->sum('valor');
+
+        // Calcular a porcentagem de crescimento
+        $porcentagem_crescimento_cadastros = ($total_cadastros_sae - $mesPassado_total_cadastros_sae) / ($mesPassado_total_cadastros_sae ?: 1) * 100;
+        $porcentagem_crescimento_valor = ($total_valor_sae - $mesPassado_total_valor_sae) / ($mesPassado_total_valor_sae ?: 1) * 100;
+
+        // Formatar a porcentagem para exibição
+        $porcentagem_crescimento_cadastros_formatada = sprintf("%.2f%%", $porcentagem_crescimento_cadastros);
+        $porcentagem_crescimento_valor_formatada = sprintf("%.2f%%", $porcentagem_crescimento_valor);
+
+
+        return view('admin_empresa.dashboard_metricas', compact('porcentagem_crescimento_cadastros_formatada', 'porcentagem_crescimento_valor_formatada', 'mesPassado_total_cadastros_sae', 'mesPassado_total_valor_sae', 'total_valor_sae', 'total_cadastros_sae', 'projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
     }
 
     public function empresa_metricas_pesquisa(Request $request, $empresa)

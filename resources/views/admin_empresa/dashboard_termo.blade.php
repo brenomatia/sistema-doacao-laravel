@@ -24,8 +24,8 @@
     </p>
     <p><strong>ID: 2024{{ $cliente->id}}</strong></p>
     <p>
-        O (A) Sra. <strong>{{ $cliente->name }}</strong> (  ) CPF / (  ) RG Nº ________________, Endereço 
-        <strong>{{ $cliente->rua }} - {{ $cliente->numero }}, {{ $cliente->bairro }}, {{ $cliente->cidade }}</strong>, Código de Ligação: ___________________, imóvel
+        O (A) Sra. <strong>{{ $cliente->name }}</strong> (  ) CPF / (  ) RG Nº ___________________________________, Endereço 
+        <strong>{{ $cliente->rua }} - {{ $cliente->numero }}, {{ $cliente->bairro }}, {{ $cliente->cidade }}</strong>, Código de Ligação: ________________________, imóvel
         (___) próprio (___) Alugado, denominado simplesmente DOADOR; a Superintendência de Água e esgoto de
         Ituiutaba — SAE, neste ato denominado simplesmente Intermediária: A obras Sociais da
         Associação Coração acolhedor. CNPJ 29.450.986/0001-83, neste ato denominada BENEFICIÁRIA,

@@ -36,6 +36,117 @@
 </div>
 
 
+
+
+
+
+<div class="container col-12 mt-5 p-3">
+    <div class="row">
+
+        <div class="col-lg-6 col-md-6 mb-4">
+            <div class="card"
+                style="border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.35); background-color: #38414A; color: white;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon bg-gradient-success text-white d-flex align-items-center justify-content-center rounded"
+                        style="font-size: 24px;">
+                        <i class="fa-solid fa-address-card"></i>
+                    </div>
+                    <div class="ml-auto">
+                        <h4 class="card-title text-white" style="font-size: 30px;">{{ $total_cadastros_sae }}</h4>
+                        <p class="card-text">Clientes SAE</p>
+                    </div>
+                </div>
+                <div class="card-footer" style="background-color: #38414A; color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-0">Mês Anterior</p>
+                            <span>{{ $mesPassado_total_cadastros_sae }}</span>
+                        </div>
+                    </div>
+                </div>
+                @if($mesPassado_total_cadastros_sae <= 0)@else
+                @if ($porcentagem_crescimento_cadastros_formatada < 0)
+                    @if($porcentagem_crescimento_cadastros_formatada == 0)
+                        <div class="text-danger ml-2">
+                            <i class="fas fa-arrow-down"></i> 0 %
+                        </div>
+                    @else
+                        <div class="text-danger ml-2">
+                            <i class="fas fa-arrow-down"></i> {{ $porcentagem_crescimento_cadastros_formatada }}
+                        </div>
+                    @endif
+                @else
+            <div class="text-success ml-2">
+                <i class="fas fa-arrow-up"></i> {{ $porcentagem_crescimento_cadastros_formatada }}
+            </div>
+            @endif
+                <div class="progress" style="height: 10px; margin: 10px;">
+                    <div class="progress-bar bg-gradient-success" role="progressbar"
+                        style="width: {{ max(0, min(100, $porcentagem_crescimento_cadastros_formatada)) }}%;"
+                        aria-valuenow="{{ max(0, min(100, $porcentagem_crescimento_cadastros_formatada)) }}" aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+            @endif
+            </div>
+        </div>
+
+        <div class="col-lg-6 col-md-6 mb-4">
+            <div class="card"
+                style="border-radius: 10px; box-shadow: 0 0 10px rgba(0, 0, 0, 0.35); background-color: #38414A; color: white;">
+                <div class="card-body d-flex align-items-center">
+                    <div class="icon bg-gradient-success text-white d-flex align-items-center justify-content-center rounded"
+                        style="font-size: 24px;">
+                        <i class="fa-solid fa-address-card"></i>
+                    </div>
+                    <div class="ml-auto">
+                        <h4 class="card-title text-white" style="font-size: 30px;">R$ {{ number_format($total_valor_sae, 2) }}</h4>
+                        <p class="card-text">Valor SAE</p>
+                    </div>
+                </div>
+                <div class="card-footer" style="background-color: #38414A; color: white;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="mb-0">Mês Anterior</p>
+                            <span>R$ {{ number_format($mesPassado_total_valor_sae, 2) }}</span>
+                        </div>
+                    </div>
+                </div>
+                @if($mesPassado_total_valor_sae <= 0)@else
+                @if ($porcentagem_crescimento_valor_formatada < 0)
+                    @if($porcentagem_crescimento_valor_formatada == 0)
+                        <div class="text-danger ml-2">
+                            <i class="fas fa-arrow-down"></i> 0 %
+                        </div>
+                    @else
+                        <div class="text-danger ml-2">
+                            <i class="fas fa-arrow-down"></i> {{ $porcentagem_crescimento_valor_formatada }}
+                        </div>
+                    @endif
+                @else
+                <div class="text-success ml-2">
+                    <i class="fas fa-arrow-up"></i> {{ $porcentagem_crescimento_valor_formatada }}
+                </div>
+                @endif
+                <div class="progress" style="height: 10px; margin: 10px;">
+                    <div class="progress-bar bg-gradient-success" role="progressbar"
+                        style="width: {{ max(0, min(100, $porcentagem_crescimento_valor_formatada)) }}%;"
+                        aria-valuenow="{{ max(0, min(100, $porcentagem_crescimento_valor_formatada)) }}" aria-valuemin="0"
+                        aria-valuemax="100">
+                    </div>
+                </div>
+                @endif
+            </div>
+    </div>
+
+
+    </div>
+</div>
+
+
+
+
+
 <div class="container col-12 p-3">
     <div class="row">
         <div class="col-md-6">
