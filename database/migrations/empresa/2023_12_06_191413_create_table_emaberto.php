@@ -12,9 +12,10 @@ return new class extends Migration {
     {
         Schema::create('emaberto', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('cliente_id');
             $table->decimal('valor', 10, 2);
             $table->string('nome_cliente')->nullable();
+            $table->string('gerou_recibo_id')->nullable();
+            $table->unsignedBigInteger('cliente_id');
             $table->string('end_cliente')->nullable();
             $table->string('status')->nullable();
             $table->timestamps();

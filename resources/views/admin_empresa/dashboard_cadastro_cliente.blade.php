@@ -143,7 +143,7 @@
                 <tr>
                     <th class="rounded-left text-center">Nome cliente</th>
                     <th class="text-center">Endereço</th>
-                    <th class="text-center">Celular</th>
+                    <th class="text-center">Celular/Telefone</th>
                     <th class="text-center">Tipo de doação</th>
                     <th class="text-center">Valor doação</th>
                     <th class="text-center">Data vencimento</th>
@@ -156,7 +156,15 @@
                     <td class="align-middle text-center">{{ $cliente->name }}</td>
                     <td class="align-middle text-center">
                         {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero }}</td>
-                    <td class="align-middle text-center">{{ $cliente->celular }}</td>
+
+                    <td class="align-middle text-center">
+                        @if($cliente->celular == null)
+                            {{ $cliente->telefone_fixo }}
+                        @else
+                            {{ $cliente->celular }}
+                        @endif
+                    </td>
+
                     @if($cliente->tipo == "SAE")
                     <td class="align-middle text-center"><img src="{{ asset('img/sae.png') }}"
                             style="max-width: 100px;"></td>
@@ -445,7 +453,7 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-gradient-success text-white">
+                                    <span class="input-group-text bg-gradient-danger text-white">
                                         <i class="fa-solid fa-user"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_nome"
@@ -475,10 +483,10 @@
                             <div class="col-md-4 mb-3">
                                 <div class="input-group">
                                     <span class="input-group-text bg-gradient-success text-white">
-                                        <i class="fa-solid fa-phone"></i>
+                                        <i class="fa-solid fa-mobile-screen-button"></i>
                                     </span>
                                     <input type="text" class="form-control custom-input" id="cliente_telefone"
-                                        name="cliente_telefone" placeholder="Celular" required>
+                                        name="cliente_telefone" placeholder="Celular">
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
@@ -503,7 +511,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-gradient-success text-white">
+                                    <span class="input-group-text bg-gradient-danger text-white">
                                         <i class="fa-solid fa-money-bill-wave"></i>
                                     </span>
                                     <input type="number" class="form-control custom-input" id="valor_doacao"
@@ -512,7 +520,7 @@
                             </div>
                             <div class="col-md-4 mb-3">
                                 <div class="input-group">
-                                    <span class="input-group-text bg-gradient-primary text-white">
+                                    <span class="input-group-text bg-gradient-success text-white">
                                         CEP
                                     </span>
                                     <input type="number" class="form-control" id="cep" name="cep"
@@ -522,20 +530,30 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-12 mb-3">
+                            <div class="col-md-6 mb-3">
                                 <label>Data vencimento:</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-gradient-success text-white">
+                                    <span class="input-group-text bg-gradient-danger text-white">
                                         <i class="fa-regular fa-calendar"></i>
                                     </span>
                                     <input type="date" class="form-control custom-input" id="data_doacao"
                                         name="vencimento" required>
                                 </div>
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Telefone fixo:</label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-gradient-success text-white">
+                                        <i class="fa-solid fa-phone"></i>
+                                    </span>
+                                    <input type="number" class="form-control custom-input" id="cliente_fixo"
+                                        name="telefone_fixo">
+                                </div>
+                            </div>
                         </div>
 
                         <div class="modal-footer">
-                            <button type="button" class="btn bg-danger text-white" data-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn bg-gradient-danger text-white" data-dismiss="modal">Fechar</button>
                             <button type="submit" class="btn bg-gradient-success text-white">Cadastrar</button>
                         </div>
                 </form>

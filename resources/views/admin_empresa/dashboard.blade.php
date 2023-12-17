@@ -191,7 +191,7 @@
 
 
 <div class="row">
-    <div class="col-lg-6 col-md-6 mb-4">
+    <div class="col-lg-5 col-md-5 mb-4">
         <div class="card border-0 shadow-lg" style="border-radius: 10px; background-color: #38414A; color: white;">
 
             <div class="card-header border-0" style="background-color: #38414A; color: white;">
@@ -205,8 +205,10 @@
                             <tr>
                                 <th class="bg-gradient-success text-white rounded-left border-0"
                                     style="font-size: 14px;">NOME CLIENTE</th>
-                                <th class="bg-gradient-success text-white rounded-right border-0"
+                                <th class="bg-gradient-success text-white border-0"
                                     style="font-size: 14px;">VALOR</th>
+                                <th class="bg-gradient-success text-white rounded-right border-0"
+                                    style="font-size: 14px;">Data/Hora</th>
                                 <!-- Adicione mais colunas conforme necessário -->
                             </tr>
                         </thead>
@@ -214,8 +216,8 @@
                             @forelse ($ultimosRegistros as $registro)
                             <tr>
                                 <td class="border-0" style="font-size: 14px;">{{ $registro->name }}</td>
-                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">R$ {{ $registro->valor }}
-                                </td>
+                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">R$ {{ $registro->valor }}</td>
+                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">{{ $registro->created_at->format('d/m/Y') }}</td>
                             </tr>
                             @empty
                             <tr>
@@ -229,7 +231,7 @@
         </div>
     </div>
 
-    <div class="col-lg-6 col-md-6 mb-4">
+    <div class="col-lg-7 col-md-7 mb-4">
         <div class="card border-0 shadow-lg" style="border-radius: 10px; background-color: #38414A; color: white;">
 
             <div class="card-header border-0" style="background-color: #38414A; color: white;">
@@ -243,8 +245,10 @@
                             <tr>
                                 <th class="bg-gradient-success text-white rounded-left border-0"
                                     style="font-size: 14px;">Nome user</th>
-                                <th class="bg-gradient-success text-white rounded-right border-0"
+                                <th class="bg-gradient-success text-white border-0"
                                     style="font-size: 14px;">Alteração</th>
+                                <th class="bg-gradient-success text-white rounded-right border-0"
+                                    style="font-size: 14px;">Data/Hora</th>
                                 <!-- Adicione mais colunas conforme necessário -->
                             </tr>
                         </thead>
@@ -252,8 +256,8 @@
                             @forelse ($ultimosAlteracoes as $alteracoes)
                             <tr>
                                 <td class="border-0" style="font-size: 14px;">{{ $alteracoes->name }}</td>
-                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">
-                                    {{ $alteracoes->registro_acao }}</td>
+                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">{{ $alteracoes->registro_acao }}</td>
+                                <td class="border-0" style="font-size: 14px; color: #2DCEAB;">{{ $alteracoes->created_at->format('d/m/Y - H:i:s') }}</td>
                             </tr>
                             @empty
                             <tr>

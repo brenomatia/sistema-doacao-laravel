@@ -9,10 +9,12 @@ return new class extends Migration {
     {
         Schema::create('clientes', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->nullable();
+            $table->string('registro_id')->nullable();
+            $table->string('name')->nullable()->unique();
             $table->string('rua')->nullable();
             $table->string('numero')->nullable();
             $table->string('celular')->nullable();
+            $table->string('telefone_fixo')->nullable();
             $table->string('bairro')->nullable();
             $table->string('cidade')->nullable();
             $table->string('doador')->nullable();

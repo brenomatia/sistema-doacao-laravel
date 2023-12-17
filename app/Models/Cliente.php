@@ -16,6 +16,7 @@ class Cliente extends Model
         'rua',
         'numero',
         'celular',
+        'telefone_fixo',
         'valor',
         'bairro',
         'horario_receber',

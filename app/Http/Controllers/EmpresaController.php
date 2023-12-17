@@ -306,7 +306,7 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $clientes = Cliente::all();
+        $clientes = Cliente::orderBy('name')->get();
         $doacoes = Doacao::all();
 
         return view('admin_empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes', 'doacoes'));
@@ -315,7 +315,7 @@ class EmpresaController extends Controller
     public function Empresa_cadastro_cliente_add(Request $request, $empresa)
     {
         $empresa = Empresa::where('name', $empresa)->first();
-        // Cria uma nova conexão com o banco de dados da empresa.
+
         Config::set('database.connections.empresa', [
             'driver' => 'mysql',
             'host' => $empresa->database_host,
@@ -330,32 +330,43 @@ class EmpresaController extends Controller
             'engine' => null,
         ]);
 
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
         DB::setDefaultConnection('empresa');
 
         if (!$request->user()) {
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        // Validação dos campos do formulário
         $request->validate([
             'cliente_nome' => 'required|string|max:255',
-            'cliente_telefone' => 'required|string|max:15',
-            'valor_doacao' => 'required|numeric', // Alterado para numeric para o campo de valor
+            'valor_doacao' => 'required|numeric',
             'vencimento' => 'required|date',
+            'cliente_endereco' => 'nullable|string|max:255',
+            'cliente_numero' => 'nullable|string|max:255',
+            'cliente_telefone' => 'nullable|string|max:15',
+            'cliente_bairro' => 'nullable|string|max:255',
+            'cliente_cidade' => 'nullable|string|max:255',
+            'telefone_fixo' => 'nullable|string|max:15',
         ]);
 
-        // Cria um novo objeto Cliente com base nos dados do formulário
-        $cliente = new Cliente([
-            'name' => $request->input('cliente_nome'),
-            'rua' => $request->input('cliente_endereco'),
-            'numero' => $request->input('cliente_numero'),
-            'celular' => $request->input('cliente_telefone'),
-            'bairro' => $request->input('cliente_bairro'),
-            'cidade' => $request->input('cliente_cidade'),
-            'valor' => $request->input('valor_doacao'),
-            'created_at' => $request->input('vencimento')
-        ]);
+        $clienteExistente = DB::table('clientes')
+            ->whereRaw('LOWER(name) = LOWER(?)', [$request->input('cliente_nome')])
+            ->first();
+
+        if ($clienteExistente) {
+            return redirect()->back()->with('error', 'Cliente já cadastrado na base de dados.');
+        }
+
+        $cliente = new Cliente();
+        $cliente->registro_id = Auth::user()->id;
+        $cliente->name = $request->input('cliente_nome');
+        $cliente->rua = $request->input('cliente_endereco');
+        $cliente->numero = $request->input('cliente_numero');
+        $cliente->celular = $request->input('cliente_telefone');
+        $cliente->bairro = $request->input('cliente_bairro');
+        $cliente->telefone_fixo = $request->input('telefone_fixo');
+        $cliente->cidade = $request->input('cliente_cidade');
+        $cliente->valor = $request->input('valor_doacao');
+        $cliente->created_at = date('Y-m-d', strtotime($request->input('vencimento')));
 
         $cliente->save();
 
@@ -365,7 +376,6 @@ class EmpresaController extends Controller
         $cliente_log->cliente_id = Auth::user()->id;
         $cliente_log->registro_acao = 'Cadastrou o cliente: ' . $request->input('cliente_nome') . '.';
         $cliente_log->save();
-
 
         return redirect()->route('Empresa_cadastro_cliente', ['empresa' => $empresa->name])->with('success', 'Cliente cadastrado(a) com sucesso!');
     }
@@ -763,6 +773,7 @@ class EmpresaController extends Controller
         $aberto->cliente_id = $cliente->id;
         $aberto->valor = $cliente->valor;
         $aberto->nome_cliente = $cliente->name;
+        $aberto->gerou_recibo_id = Auth::user()->id;
         $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
         $aberto->status = "ABERTO";
         $aberto->save();
@@ -820,43 +831,49 @@ class EmpresaController extends Controller
         foreach ($logs_geral as $log) {
             $logs[] = [
                 'timestamp' => $log->created_at->format('d/m/Y H:i:s'),
-                'name' => $log->name . ' (admin)',
+                'name' => $log->name . '',
                 'message' => $log->registro_acao,
             ];
         }
 
         $users = User::all();
 
-        // Obter a data de início do mês corrente
+        // Intervalo de datas para o mês corrente
         $dataInicio = Carbon::now()->startOfMonth();
-
-        // Obter a data de término do mês corrente
         $dataFim = Carbon::now()->endOfMonth();
 
-        // Contar os cadastros no intervalo de datas
+        // Intervalo de datas para o mês anterior
+        $dataInicioMesAnterior = Carbon::now()->subMonth()->startOfMonth();
+        $dataFimMesAnterior = Carbon::now()->subMonth()->endOfMonth();
+
+        // Contagem de cadastros
         $totalCadastro = Mod::where('tipo', 'CADASTRO')
             ->whereBetween('created_at', [$dataInicio, $dataFim])
             ->count();
 
-        // Obter a data de início do mês anterior
-        $dataInicioMesAnterior = Carbon::now()->subMonth()->startOfMonth();
-
-        // Obter a data de término do mês anterior
-        $dataFimMesAnterior = Carbon::now()->subMonth()->endOfMonth();
-
-        // Contar os cadastros no intervalo de datas do mês anterior
         $totalCadastroMesAnterior = Mod::where('tipo', 'CADASTRO')
             ->whereBetween('created_at', [$dataInicioMesAnterior, $dataFimMesAnterior])
             ->count();
 
-        // Calcular a porcentagem, evitando divisão por zero
-        $porcentagem_tiquete_clientes = 0;
+        // Contagem de finalizados
+        $totalFinalizadoMesAtual = Mod::where('tipo', 'FINALIZADO')
+            ->whereBetween('created_at', [$dataInicio, $dataFim])
+            ->count();
 
-        if ($totalCadastroMesAnterior > 0) {
-            $porcentagem_tiquete_clientes = ($totalCadastro / $totalCadastroMesAnterior) * 100;
-        }
+        $totalFinalizadoMesAnterior = Mod::where('tipo', 'FINALIZADO')
+            ->whereBetween('created_at', [$dataInicioMesAnterior, $dataFimMesAnterior])
+            ->count();
 
-        return view('admin_empresa.dashboard_logs', compact('logs', 'empresa', 'users', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes'));
+        // Calcular a porcentagem de crescimento de cadastros
+        $porcentagem_tiquete_clientes = ($totalCadastroMesAnterior > 0) ? (($totalCadastro - $totalCadastroMesAnterior) / abs($totalCadastroMesAnterior)) * 100 : 0;
+
+        // Calcular a porcentagem de crescimento de finalizados
+        $porcentagem_finalizados = ($totalFinalizadoMesAnterior > 0) ? (($totalFinalizadoMesAtual - $totalFinalizadoMesAnterior) / abs($totalFinalizadoMesAnterior)) * 100 : 0;
+
+        // Calcular outras porcentagens conforme necessário
+        $porcentagem_total = ($totalCadastro > 0) ? ($totalFinalizadoMesAtual / $totalCadastro) * 100 : 0;
+
+        return view('admin_empresa.dashboard_logs', compact('porcentagem_total', 'logs', 'empresa', 'users', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes', 'totalFinalizadoMesAtual', 'totalFinalizadoMesAnterior', 'porcentagem_finalizados'));
 
 
     }
@@ -882,6 +899,10 @@ class EmpresaController extends Controller
         // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
         DB::setDefaultConnection('empresa');
 
+
+        //dd($request->all());
+
+
         if (!$request->user()) {
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
@@ -898,8 +919,47 @@ class EmpresaController extends Controller
                 'message' => $log->registro_acao,
             ];
         }
+        // Intervalo de datas para o mês corrente
+        $dataInicio = Carbon::now()->startOfMonth();
+        $dataFim = Carbon::now()->endOfMonth();
 
-        return view('admin_empresa.dashboard_logs_pesquisa', compact('logs', 'empresa', 'user'));
+        // Intervalo de datas para o mês anterior
+        $dataInicioMesAnterior = Carbon::now()->subMonth()->startOfMonth();
+        $dataFimMesAnterior = Carbon::now()->subMonth()->endOfMonth();
+
+        // Contagem de cadastros
+        $totalCadastro = Mod::where('tipo', 'CADASTRO')
+            ->whereBetween('created_at', [$dataInicio, $dataFim])
+            ->where('cliente_id', $user->id)
+            ->count();
+
+        $totalCadastroMesAnterior = Mod::where('tipo', 'CADASTRO')
+            ->whereBetween('created_at', [$dataInicioMesAnterior, $dataFimMesAnterior])
+            ->where('cliente_id', $user->id)
+            ->count();
+
+        // Contagem de finalizados
+        $totalFinalizadoMesAtual = Mod::where('tipo', 'FINALIZADO')
+            ->whereBetween('created_at', [$dataInicio, $dataFim])
+            ->where('cliente_id', $user->id)
+            ->count();
+
+        $totalFinalizadoMesAnterior = Mod::where('tipo', 'FINALIZADO')
+            ->whereBetween('created_at', [$dataInicioMesAnterior, $dataFimMesAnterior])
+            ->where('cliente_id', $user->id)
+            ->count();
+
+        // Calcular a porcentagem de crescimento de cadastros
+        $porcentagem_tiquete_clientes = ($totalCadastroMesAnterior > 0) ? (($totalCadastro - $totalCadastroMesAnterior) / abs($totalCadastroMesAnterior)) * 100 : 0;
+
+        // Calcular a porcentagem de crescimento de finalizados
+        $porcentagem_finalizados = ($totalFinalizadoMesAnterior > 0) ? (($totalFinalizadoMesAtual - $totalFinalizadoMesAnterior) / abs($totalFinalizadoMesAnterior)) * 100 : 0;
+
+        // Calcular outras porcentagens conforme necessário
+        $porcentagem_total = ($totalCadastro > 0) ? ($totalFinalizadoMesAtual / $totalCadastro) * 100 : 0;
+
+        return view('admin_empresa.dashboard_logs_pesquisa', compact('porcentagem_total', 'logs', 'empresa', 'user', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes', 'totalFinalizadoMesAtual', 'totalFinalizadoMesAnterior', 'porcentagem_finalizados'));
+
     }
 
     public function empresa_cadastro_processando_recibo(Request $request, $empresa, $id)
@@ -939,6 +999,7 @@ class EmpresaController extends Controller
         $aberto->cliente_id = $cliente->id;
         $aberto->valor = $cliente->valor;
         $aberto->nome_cliente = $cliente->name;
+        $aberto->gerou_recibo_id = Auth::user()->id;
         $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
         $aberto->status = "ABERTO";
         $aberto->save();
@@ -1196,10 +1257,13 @@ class EmpresaController extends Controller
 
         // PAREI AQUI --------------------------------------------------------------------------------------------------------------
         $cliente_log = new Mod();
-        $cliente_log->name = $atualizar_status->nome_cliente;
         $cliente_log->tipo = "FINALIZADO";
-        $cliente_log->cliente_id = $atualizar_status->cliente_id;
-        $cliente_log->registro_acao = 'Finalizou o recibo do cliente: ' . $atualizar_status->nome_cliente . '.';
+        $cliente_log->name = Auth::user()->name;
+        $cliente_log->cliente_id = $atualizar_created_at_clientes->registro_id;
+
+        $user = User::find($atualizar_status->gerou_recibo_id);
+
+        $cliente_log->registro_acao = '( FINALIZADO ) Doador: ' . $atualizar_status->nome_cliente . ' - Funcionário: ' . $user->name;
         $cliente_log->save();
 
         $registrar_doação = new Doacao();
