@@ -142,6 +142,7 @@
             <thead>
                 <tr>
                     <th class="rounded-left text-center">Nome cliente</th>
+                    <th class="text-center">Observação</th>
                     <th class="text-center">Endereço</th>
                     <th class="text-center">Celular/Telefone</th>
                     <th class="text-center">Tipo de doação</th>
@@ -154,14 +155,17 @@
                 @foreach ($clientes as $cliente)
                 <tr>
                     <td class="align-middle text-center">{{ $cliente->name }}</td>
+                    <td class="align-middle text-center">{{ $cliente->obs }}</td>
                     <td class="align-middle text-center">
                         {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero }}</td>
 
                     <td class="align-middle text-center">
                         @if($cliente->celular == null)
-                            {{ $cliente->telefone_fixo }}
+                        {{ $cliente->telefone_fixo }}
+                        @elseif($cliente->celular && $cliente->telefone_fixo )
+                        FIXO: {{ $cliente->telefone_fixo }} - CEL: {{ $cliente->celular }}
                         @else
-                            {{ $cliente->celular }}
+                        {{ $cliente->celular }}
                         @endif
                     </td>
 
@@ -552,8 +556,16 @@
                             </div>
                         </div>
 
+                        <div class="col-md-12 mb-3">
+                            <label>Observação:</label>
+                            <!-- Substitua o input por um textarea -->
+                            <textarea class="form-control custom-input" id="observacao" name="observacao" rows="4"
+                                required></textarea>
+                        </div>
+
                         <div class="modal-footer">
-                            <button type="button" class="btn bg-gradient-danger text-white" data-dismiss="modal">Fechar</button>
+                            <button type="button" class="btn bg-gradient-danger text-white"
+                                data-dismiss="modal">Fechar</button>
                             <button type="submit" class="btn bg-gradient-success text-white">Cadastrar</button>
                         </div>
                 </form>

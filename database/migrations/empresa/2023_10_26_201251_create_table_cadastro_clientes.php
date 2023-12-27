@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->id();
             $table->string('registro_id')->nullable();
             $table->string('name')->nullable()->unique();
+            $table->string('obs')->nullable();
             $table->string('rua')->nullable();
             $table->string('numero')->nullable();
             $table->string('celular')->nullable();

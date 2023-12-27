@@ -346,6 +346,7 @@ class EmpresaController extends Controller
             'cliente_bairro' => 'nullable|string|max:255',
             'cliente_cidade' => 'nullable|string|max:255',
             'telefone_fixo' => 'nullable|string|max:15',
+            'observacao' => 'nullable|string|max:255',
         ]);
 
         $clienteExistente = DB::table('clientes')
@@ -366,6 +367,7 @@ class EmpresaController extends Controller
         $cliente->telefone_fixo = $request->input('telefone_fixo');
         $cliente->cidade = $request->input('cliente_cidade');
         $cliente->valor = $request->input('valor_doacao');
+        $cliente->obs = $request->input('observacao');
         $cliente->created_at = date('Y-m-d', strtotime($request->input('vencimento')));
 
         $cliente->save();
@@ -634,9 +636,9 @@ class EmpresaController extends Controller
             ->orderBy('name')
             ->get();
 
-        //dd($clientes);
+        $doacoes = Doacao::all();
 
-        return view('admin_empresa.dashboard_doacao_localizado', compact('empresa', 'clientes'));
+        return view('admin_empresa.dashboard_doacao_localizado', compact('empresa', 'clientes', 'doacoes'));
     }
 
     public function empresa_registrar_doacao(Request $request, $empresa, $id)
