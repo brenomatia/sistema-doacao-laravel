@@ -18,7 +18,7 @@
             @foreach ($clientes as $cliente)
             @if($cliente->doador != 'EMITIDO')
             <tr id="row_{{ $cliente->id }}">
-                <form action="{{ route('empresa_areceber_emitir', ['empresa' => $empresa->name, 'doacao_id' => $cliente->id]) }}" method="POST" id="form_{{ $cliente->id }}" data-url="{{ route('empresa_areceber_emitir', ['empresa' => $empresa->name, 'doacao_id' => $cliente->id]) }}">
+                <form action="{{ route('empresa_cadastro_processando_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}" method="POST" id="form_{{ $cliente->id }}" data-url="{{ route('empresa_areceber_emitir', ['empresa' => $empresa->name, 'doacao_id' => $cliente->id]) }}">
                     @csrf
                     <td class="align-middle text-center">{{ $cliente->name }}</td>
                     <td class="align-middle text-center">

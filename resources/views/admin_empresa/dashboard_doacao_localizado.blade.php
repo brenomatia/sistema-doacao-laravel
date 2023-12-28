@@ -170,7 +170,7 @@
 
                         @if ($cliente->situacao != 'PRIMEIRA')
                         <form
-                            action="{{ route('empresa_cadastro_cliente_primeira', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
+                            action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
                             method="POST" style="display: inline-block;">
                             @csrf
                             <button type="submit" class="btn" style="background-color: #38414A; color: white;">1°
@@ -302,7 +302,7 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_nome" name="cliente_nome"
-                                                                value="{{ $cliente->name }}" required>
+                                                                value="{{ $cliente->name }}">
                                                         </div>
                                                     </div>
                                                     <div class="col-md-6 mb-3">
@@ -313,7 +313,7 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_endereco" name="cliente_endereco"
-                                                                value="{{ $cliente->rua }}" required>
+                                                                value="{{ $cliente->rua }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -326,7 +326,7 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_numero" name="cliente_numero"
-                                                                value="{{ $cliente->numero }}" required>
+                                                                value="{{ $cliente->numero }}">
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4 mb-3">
@@ -337,7 +337,7 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_telefone" name="cliente_telefone"
-                                                                value="{{ $cliente->celular }}" required>
+                                                                value="{{ $cliente->celular }}">
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4 mb-3">
@@ -348,7 +348,7 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_bairro" name="cliente_bairro"
-                                                                value="{{ $cliente->bairro }}" required>
+                                                                value="{{ $cliente->bairro }}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -361,10 +361,10 @@
                                                             </span>
                                                             <input type="text" class="form-control custom-input"
                                                                 id="cliente_cidade" name="cliente_cidade"
-                                                                value="{{ $cliente->cidade }}" required>
+                                                                value="{{ $cliente->cidade }}">
                                                         </div>
                                                     </div>
-                                                    <div class="col-md-4 mb-3">
+                                                    <div class="col-md-8 mb-3">
                                                         <div class="input-group">
                                                             <span
                                                                 class="input-group-text bg-gradient-success text-white">
@@ -372,43 +372,38 @@
                                                             </span>
                                                             <input type="number" class="form-control custom-input"
                                                                 id="valor_doacao" name="valor_doacao"
-                                                                value="{{ $cliente->valor }}" required>
-                                                        </div>
-                                                    </div>
-                                                    <div class="col-md-4 mb-3">
-                                                        <div class="input-group">
-                                                            <span
-                                                                class="input-group-text bg-gradient-success text-white">
-                                                                <strong>R$</strong>
-                                                            </span>
-                                                            <select class="form-select custom-input" id="pagamento"
-                                                                name="cliente_pagamento">
-                                                                <option value="MENSAL"
-                                                                    {{ $cliente->tipo_pagamento === 'MENSAL' ? 'selected' : '' }}>
-                                                                    MENSAL</option>
-                                                                <option value="ÚNICA"
-                                                                    {{ $cliente->tipo_pagamento === 'ÚNICA' ? 'selected' : '' }}>
-                                                                    ÚNICA</option>
-                                                            </select>
-
+                                                                value="{{ $cliente->valor }}">
                                                         </div>
                                                     </div>
                                                 </div>
 
                                                 <div class="row">
-                                                    <div class="col-md-12 mb-3">
+                                                    <div class="col-md-6 mb-3">
                                                         <label>Data vencimento:</label>
                                                         <div class="input-group">
-                                                            <span
-                                                                class="input-group-text bg-gradient-success text-white">
+                                                            <span class="input-group-text bg-gradient-success text-white">
                                                                 <i class="fa-regular fa-calendar"></i>
                                                             </span>
-                                                            <input type="date" class="form-control custom-input"
-                                                                id="data_doacao" name="vencimento"
-                                                                value="{{ $cliente->created_at->format('Y-m-d') }}"
-                                                                required>
+                                                            <input type="date" class="form-control custom-input" id="data_doacao"
+                                                            value="{{ $cliente->created_at->format('Y-m-d') }}" name="vencimento">
                                                         </div>
                                                     </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label>Telefone fixo:</label>
+                                                        <div class="input-group">
+                                                            <span class="input-group-text bg-gradient-success text-white">
+                                                                <i class="fa-solid fa-phone"></i>
+                                                            </span>
+                                                            <input type="number" class="form-control custom-input" id="cliente_fixo"
+                                                            value="{{ $cliente->telefone_fixo }}" name="telefone_fixo">
+                                                        </div>
+                                                    </div>
+                                                </div>
+                        
+                                                <div class="col-md-12 mb-3">
+                                                    <label>Observação:</label>
+                                                    <textarea class="form-control custom-input" id="observacao" name="observacao" rows="4">{{ $cliente->obs }}</textarea>
                                                 </div>
 
                                                 <div class="d-flex justify-content-between mb-4">

@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Config;
 use Carbon\Carbon;
 use Dompdf\Dompdf;
-use Dompdf\Options;
+use Mike42\Escpos\Printer;
+use Mike42\Escpos\PrintConnectors\WindowsPrintConnector;
 
 class EmpresaController extends Controller
 {
@@ -496,6 +497,8 @@ class EmpresaController extends Controller
         $cliente->cidade = $request->input('cliente_cidade');
         $cliente->tipo_pagamento = $request->input('cliente_pagamento');
         $cliente->created_at = $request->input('vencimento');
+        $cliente->telefone_fixo = $request->input('telefone_fixo');
+        $cliente->obs = $request->input('observacao');
         $cliente->valor = $request->input('valor_doacao');
 
         // Salve as alterações no banco de dados
@@ -736,10 +739,47 @@ class EmpresaController extends Controller
 
         return view('admin_empresa.dashboard_processa_recibo', compact('empresa', 'logo', 'cliente', 'data'));
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function empresa_cadastro_emitindo_recibo(Request $request, $empresa, $id)
     {
         $empresa = Empresa::where('name', $empresa)->first();
-        // Cria uma nova conexão com o banco de dados da empresa.
+
+        // Configurar a conexão com o banco de dados da empresa
         Config::set('database.connections.empresa', [
             'driver' => 'mysql',
             'host' => $empresa->database_host,
@@ -754,54 +794,157 @@ class EmpresaController extends Controller
             'engine' => null,
         ]);
 
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
         DB::setDefaultConnection('empresa');
 
         if (!$request->user()) {
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $cliente = Cliente::find($id);
-        $logo = $empresa->logo;
-        $data = now();
-        $isPdf = true; // Indica que o PDF está sendo gerado
+        try {
 
-        //atualiza situacao primeira emissão:
-        Cliente::where('id', $id)->update([
-            'situacao' => "PRIMEIRA",
-        ]);
+            $cliente = Cliente::find($id);
+            $cliente->situacao = "PRIMEIRA";
+            $cliente->save();
 
-        $aberto = new EmAberto();
-        $aberto->cliente_id = $cliente->id;
-        $aberto->valor = $cliente->valor;
-        $aberto->nome_cliente = $cliente->name;
-        $aberto->gerou_recibo_id = Auth::user()->id;
-        $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
-        $aberto->status = "ABERTO";
-        $aberto->save();
+            $aberto = new EmAberto();
+            $aberto->cliente_id = $cliente->id;
+            $aberto->valor = $cliente->valor;
+            $aberto->nome_cliente = $cliente->name;
+            $aberto->gerou_recibo_id = Auth::user()->id;
+            $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
+            $aberto->status = "ABERTO";
+            $aberto->save();
 
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->tipo = "GEROU RECIBO";
-        $cliente_log->cliente_id = Auth::user()->id;
-        $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
-        $cliente_log->save();
+            $cliente_log = new Mod();
+            $cliente_log->name = Auth::user()->name;
+            $cliente_log->tipo = "GEROU RECIBO";
+            $cliente_log->cliente_id = Auth::user()->id;
+            $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
+            $cliente_log->save();
 
-        $dompdf = new Dompdf();
+            // Crie uma instância do conector de impressora
+            $connector = new WindowsPrintConnector("POS-58");
 
-        // Carregue a view e converta para HTML
-        $html = view('admin_empresa.dashboard_processa_recibo', compact('cliente', 'empresa', 'data', 'logo', 'isPdf'))->render();
+            // Crie uma instância da impressora
+            $printer = new Printer($connector);
 
-        // Carregue o HTML no Dompdf
-        $dompdf->loadHtml($html);
+            // Início do texto a ser impresso
+            $textoImpressao = "";
 
-        // Renderize o PDF com um nome de arquivo personalizado
-        $dompdf->render();
-        $filename = $cliente->name . '_recibo.pdf'; // Defina o nome do arquivo com base no nome do cliente
 
-        // Exiba o PDF no navegador com o nome de arquivo personalizado
-        return $dompdf->stream($filename);
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+            $textoImpressao .= "Associação Coração Acolhedor\n";
+            $textoImpressao .= "CNPJ 29.450.986/0001-83\n";
+            $textoImpressao .= "associacaocoracaoacolhedor@gmail.com\n";
+            $textoImpressao .= "WhatsApp: (34) 99680-9115\n";
+            $textoImpressao .= "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Recebemos de:\n";
+            $textoImpressao .= $cliente->name . "\n";
+            $textoImpressao .= "Endereço:\n";
+            $textoImpressao .= $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade . "\n";
+            $textoImpressao .= "Celular: " . $cliente->celular . "\n";
+            $textoImpressao .= "Fixo: " . $cliente->telefone_fixo . "\n";
+            $textoImpressao .= "Data/Hora: " . $cliente->created_at->format('d/m/Y') . "\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Observação:\n";
+            $textoImpressao .= $cliente->obs . "\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Referente a doação para a instituição: " . $empresa->name . "\n";
+            $textoImpressao .= "Recibo ID: " . $cliente->id . "\n";
+            $textoImpressao .= "Valor Total: R$ " . $cliente->valor . "\n";
+            $textoImpressao .= "--------------------------------\n";
+
+            // Início do texto a ser impresso           
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+
+            $textoImpressao = str_replace(
+                ['ç', 'ã', 'á', 'é', 'í', 'ó', 'ú'],
+                ['c', 'a', 'a', 'e', 'i', 'o', 'u'],
+                $textoImpressao
+            );
+
+
+            // Envie o texto para a impressora
+            $printer->text($textoImpressao);
+
+            // Corte de papel
+            $printer->cut();
+
+            // Feche a conexão com a impressora
+            $printer->close();
+
+            // Retorne uma mensagem de sucesso
+            //return response()->json(['success' => true, 'message' => 'Impressão concluída com sucesso.']);
+            return back()->with('success', 'Recibo gerado com sucesso!');
+        } catch (\Exception $e) {
+            // Retorne uma mensagem de erro
+            return response()->json(['success' => false, 'message' => 'Erro ao imprimir: ' . $e->getMessage()]);
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function empresa_logs(Request $request, $empresa)
     {
         $empresa = Empresa::where('name', $empresa)->first();
@@ -964,10 +1107,42 @@ class EmpresaController extends Controller
 
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function empresa_cadastro_processando_recibo(Request $request, $empresa, $id)
     {
         $empresa = Empresa::where('name', $empresa)->first();
-        // Cria uma nova conexão com o banco de dados da empresa.
+
+        // Configurar a conexão com o banco de dados da empresa
         Config::set('database.connections.empresa', [
             'driver' => 'mysql',
             'host' => $empresa->database_host,
@@ -982,52 +1157,130 @@ class EmpresaController extends Controller
             'engine' => null,
         ]);
 
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
         DB::setDefaultConnection('empresa');
 
         if (!$request->user()) {
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $cliente = Cliente::find($id);
-        $cliente->doador = "EMITIDO";
-        $cliente->save();
+        try {
 
-        $logo = $empresa->logo;
-        $data = now();
-        $isPdf = true; // Indica que o PDF está sendo gerado
+            $cliente = Cliente::find($id);
+            $cliente->doador = "EMITIDO";
+            $cliente->save();
 
-        $aberto = new EmAberto();
-        $aberto->cliente_id = $cliente->id;
-        $aberto->valor = $cliente->valor;
-        $aberto->nome_cliente = $cliente->name;
-        $aberto->gerou_recibo_id = Auth::user()->id;
-        $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
-        $aberto->status = "ABERTO";
-        $aberto->save();
+            $aberto = new EmAberto();
+            $aberto->cliente_id = $cliente->id;
+            $aberto->valor = $cliente->valor;
+            $aberto->nome_cliente = $cliente->name;
+            $aberto->gerou_recibo_id = Auth::user()->id;
+            $aberto->end_cliente = $cliente->rua . ' - ' . $cliente->numero . ', ' . $cliente->bairro . ', ' . $cliente->cidade;
+            $aberto->status = "ABERTO";
+            $aberto->save();
 
-        $cliente_log = new Mod();
-        $cliente_log->name = Auth::user()->name;
-        $cliente_log->tipo = "GEROU RECIBO";
-        $cliente_log->cliente_id = Auth::user()->id;
-        $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
-        $cliente_log->save();
+            $cliente_log = new Mod();
+            $cliente_log->name = Auth::user()->name;
+            $cliente_log->tipo = "GEROU RECIBO";
+            $cliente_log->cliente_id = Auth::user()->id;
+            $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
+            $cliente_log->save();
 
-        $dompdf = new Dompdf();
+            // Crie uma instância do conector de impressora
+            $connector = new WindowsPrintConnector("POS-58");
 
-        // Carregue a view e converta para HTML
-        $html = view('admin_empresa.dashboard_processa_recibo', compact('cliente', 'empresa', 'data', 'logo', 'isPdf'))->render();
+            // Crie uma instância da impressora
+            $printer = new Printer($connector);
 
-        // Carregue o HTML no Dompdf
-        $dompdf->loadHtml($html);
+            // Início do texto a ser impresso
+            $textoImpressao = "";
 
-        // Renderize o PDF com um nome de arquivo personalizado
-        $dompdf->render();
-        $filename = $cliente->name . '_recibo.pdf'; // Defina o nome do arquivo com base no nome do cliente
 
-        // Exiba o PDF no navegador com o nome de arquivo personalizado
-        return $dompdf->stream($filename);
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+            $textoImpressao .= "Associação Coração Acolhedor\n";
+            $textoImpressao .= "CNPJ 29.450.986/0001-83\n";
+            $textoImpressao .= "associacaocoracaoacolhedor@gmail.com\n";
+            $textoImpressao .= "WhatsApp: (34) 99680-9115\n";
+            $textoImpressao .= "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Recebemos de:\n";
+            $textoImpressao .= $cliente->name . "\n";
+            $textoImpressao .= "Endereço:\n";
+            $textoImpressao .= $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade . "\n";
+            $textoImpressao .= "Celular: " . $cliente->celular . "\n";
+            $textoImpressao .= "Fixo: " . $cliente->telefone_fixo . "\n";
+            $textoImpressao .= "Data/Hora: " . $cliente->created_at->format('d/m/Y') . "\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Observação:\n";
+            $textoImpressao .= $cliente->obs . "\n";
+            $textoImpressao .= "--------------------------------\n";
+            $textoImpressao .= "Referente a doação para a instituição: " . $empresa->name . "\n";
+            $textoImpressao .= "Recibo ID: " . $cliente->id . "\n";
+            $textoImpressao .= "Valor Total: R$ " . $cliente->valor . "\n";
+            $textoImpressao .= "--------------------------------\n";
+
+            // Início do texto a ser impresso           
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+            $textoImpressao .= "\n";
+
+            $textoImpressao = str_replace(
+                ['ç', 'ã', 'á', 'é', 'í', 'ó', 'ú'],
+                ['c', 'a', 'a', 'e', 'i', 'o', 'u'],
+                $textoImpressao
+            );
+
+
+            // Envie o texto para a impressora
+            $printer->text($textoImpressao);
+
+            // Corte de papel
+            $printer->cut();
+
+            // Feche a conexão com a impressora
+            $printer->close();
+
+            // Retorne uma mensagem de sucesso
+            //return response()->json(['success' => true, 'message' => 'Impressão concluída com sucesso.']);
+            return back()->with('success', 'Recibo gerado com sucesso!');
+        } catch (\Exception $e) {
+            // Retorne uma mensagem de erro
+            return response()->json(['success' => false, 'message' => 'Erro ao imprimir: ' . $e->getMessage()]);
+        }
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function empresa_usuarios(Request $request, $empresa)
     {
         $empresa = Empresa::where('name', $empresa)->first();
