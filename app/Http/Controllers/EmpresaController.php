@@ -822,61 +822,6 @@ class EmpresaController extends Controller
             $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
             $cliente_log->save();
 
-            // Crie uma instância do conector de impressora
-            $connector = new WindowsPrintConnector("POS-58");
-
-            // Crie uma instância da impressora
-            $printer = new Printer($connector);
-
-            // Início do texto a ser impresso
-            $textoImpressao = "";
-
-
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-            $textoImpressao .= "Associação Coração Acolhedor\n";
-            $textoImpressao .= "CNPJ 29.450.986/0001-83\n";
-            $textoImpressao .= "associacaocoracaoacolhedor@gmail.com\n";
-            $textoImpressao .= "WhatsApp: (34) 99680-9115\n";
-            $textoImpressao .= "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Recebemos de:\n";
-            $textoImpressao .= $cliente->name . "\n";
-            $textoImpressao .= "Endereço:\n";
-            $textoImpressao .= $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade . "\n";
-            $textoImpressao .= "Celular: " . $cliente->celular . "\n";
-            $textoImpressao .= "Fixo: " . $cliente->telefone_fixo . "\n";
-            $textoImpressao .= "Data/Hora: " . $cliente->created_at->format('d/m/Y') . "\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Observação:\n";
-            $textoImpressao .= $cliente->obs . "\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Referente a doação para a instituição: " . $empresa->name . "\n";
-            $textoImpressao .= "Recibo ID: " . $cliente->id . "\n";
-            $textoImpressao .= "Valor Total: R$ " . $cliente->valor . "\n";
-            $textoImpressao .= "--------------------------------\n";
-
-            // Início do texto a ser impresso           
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-
-            $textoImpressao = str_replace(
-                ['ç', 'ã', 'á', 'é', 'í', 'ó', 'ú'],
-                ['c', 'a', 'a', 'e', 'i', 'o', 'u'],
-                $textoImpressao
-            );
-
-
-            // Envie o texto para a impressora
-            $printer->text($textoImpressao);
-
-            // Corte de papel
-            $printer->cut();
-
-            // Feche a conexão com a impressora
-            $printer->close();
-
             // Retorne uma mensagem de sucesso
             //return response()->json(['success' => true, 'message' => 'Impressão concluída com sucesso.']);
             return back()->with('success', 'Recibo gerado com sucesso!');
@@ -1167,6 +1112,7 @@ class EmpresaController extends Controller
 
             $cliente = Cliente::find($id);
             $cliente->doador = "EMITIDO";
+            $cliente->created_at = request('proximo_vencimento');
             $cliente->save();
 
             $aberto = new EmAberto();
@@ -1185,64 +1131,9 @@ class EmpresaController extends Controller
             $cliente_log->registro_acao = 'Gerou o recibo do cliente: ' . $cliente->name . '.';
             $cliente_log->save();
 
-            // Crie uma instância do conector de impressora
-            $connector = new WindowsPrintConnector("POS-58");
-
-            // Crie uma instância da impressora
-            $printer = new Printer($connector);
-
-            // Início do texto a ser impresso
-            $textoImpressao = "";
-
-
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-            $textoImpressao .= "Associação Coração Acolhedor\n";
-            $textoImpressao .= "CNPJ 29.450.986/0001-83\n";
-            $textoImpressao .= "associacaocoracaoacolhedor@gmail.com\n";
-            $textoImpressao .= "WhatsApp: (34) 99680-9115\n";
-            $textoImpressao .= "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Recebemos de:\n";
-            $textoImpressao .= $cliente->name . "\n";
-            $textoImpressao .= "Endereço:\n";
-            $textoImpressao .= $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero . ' - ' . $cliente->cidade . "\n";
-            $textoImpressao .= "Celular: " . $cliente->celular . "\n";
-            $textoImpressao .= "Fixo: " . $cliente->telefone_fixo . "\n";
-            $textoImpressao .= "Data/Hora: " . $cliente->created_at->format('d/m/Y') . "\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Observação:\n";
-            $textoImpressao .= $cliente->obs . "\n";
-            $textoImpressao .= "--------------------------------\n";
-            $textoImpressao .= "Referente a doação para a instituição: " . $empresa->name . "\n";
-            $textoImpressao .= "Recibo ID: " . $cliente->id . "\n";
-            $textoImpressao .= "Valor Total: R$ " . $cliente->valor . "\n";
-            $textoImpressao .= "--------------------------------\n";
-
-            // Início do texto a ser impresso           
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-            $textoImpressao .= "\n";
-
-            $textoImpressao = str_replace(
-                ['ç', 'ã', 'á', 'é', 'í', 'ó', 'ú'],
-                ['c', 'a', 'a', 'e', 'i', 'o', 'u'],
-                $textoImpressao
-            );
-
-
-            // Envie o texto para a impressora
-            $printer->text($textoImpressao);
-
-            // Corte de papel
-            $printer->cut();
-
-            // Feche a conexão com a impressora
-            $printer->close();
-
             // Retorne uma mensagem de sucesso
             //return response()->json(['success' => true, 'message' => 'Impressão concluída com sucesso.']);
-            return back()->with('success', 'Recibo gerado com sucesso!');
+            return back()->with('success', 'Recibo do cliente ' . $cliente->name . ' gerado com sucesso!');
         } catch (\Exception $e) {
             // Retorne uma mensagem de erro
             return response()->json(['success' => false, 'message' => 'Erro ao imprimir: ' . $e->getMessage()]);

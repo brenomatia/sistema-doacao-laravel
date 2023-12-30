@@ -17,9 +17,7 @@
   <link href="{{ asset('assets/css/argon-dashboard.css?v=1.1.2') }}" rel="stylesheet" />
 </head>
 <style>
-  /* app.css */
-  @import '~leaflet/dist/leaflet.css';
-
+  
   /* Estilo do ícone quando o link está ativo */
   .navbar-nav .nav-item.active a i {
     color: #2DCEAB;
