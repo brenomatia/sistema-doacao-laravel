@@ -91,7 +91,7 @@
         + Clientes
     </button>
 
-    <form action="{{ route('empresa_doações_localizar', ['empresa' => $empresa->name ]) }}" method="POST">
+    <form action="{{ route('empresa_doadores_localizar', ['empresa' => $empresa->name ]) }}" method="POST">
         @csrf
         <!-- Campo de input para buscar cliente com ícone de lupa -->
         <div class="input-group mt-3 mb-3">
@@ -169,13 +169,104 @@
                     <td class="align-middle text-center">
 
                         @if ($cliente->situacao != 'PRIMEIRA')
+
                         <form
                             action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
-                            method="POST" style="display: inline-block;">
+                            method="POST" id="reciboForm" style="display: none;">
                             @csrf
-                            <button type="submit" class="btn" style="background-color: #38414A; color: white;">1°
-                                EMISSÃO</button>
                         </form>
+
+                        <button type="button" class="btn" style="background-color: #38414A; color: white;"
+                            onclick="confirmarEnvioFormulario_{{ $cliente->id }}()">
+                            1° RECIBO
+                        </button>
+
+                        <script>
+                            function imprimirRecibo_{{ $cliente -> id }}() {
+                                // Dados do cliente e empresa (substitua pelos dados reais)
+                                var cliente = {
+                                    name: "{{ $cliente->name }}",
+                                    rua: "{{ $cliente->rua }}",
+                                    numero: "{{ $cliente->numero }}",
+                                    bairro: "{{ $cliente->bairro }}",
+                                    cidade: "{{ $cliente->cidade }}",
+                                    celular: "{{ $cliente->celular }}",
+                                    telefone_fixo: "{{ $cliente->fixo }}",
+                                    created_at: new Date(),
+                                    obs: "{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}",
+                                    id: "{{ $cliente->id }}",
+                                    valor: "{{ $cliente->valor }}"
+                                };
+
+                                var empresa = {
+                                    name: "Associação Coração Acolhedor",
+                                    cnpj: "29.450.986/0001-83",
+                                    email: "associacaocoracaoacolhedor@gmail.com",
+                                    whatsapp: "(34) 99680-9115",
+                                    endereco: "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG"
+                                };
+
+                                var htmlRecibo = `
+                                    <div style="width: 58mm; text-align: left; font-family: 'Arial', sans-serif; font-size: 12px; line-height: 1.5;">
+                                        <p style="font-weight: bold; font-size: 14px; text-align: center;">${empresa.name}</p>
+                                        <p>CNPJ ${empresa.cnpj}</p>
+                                        <p style="font-size: 12px;">${empresa.email}</p>
+                                        <p>WhatsApp: ${empresa.whatsapp}</p>
+                                        <p>${empresa.endereco}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Recebemos de:</p>
+                                        <p>${cliente.name}</p>
+                                        <p style="font-weight: bold;">Endereço:</p>
+                                        <p>${cliente.bairro} - ${cliente.rua} - ${cliente.numero} - ${cliente.cidade}</p>
+                                        <p>Celular: ${cliente.celular}</p>
+                                        <p>Fixo: ${cliente.telefone_fixo}</p>
+                                        <p>Data/Hora: ${cliente.created_at.toLocaleDateString()}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Observação:</p>
+                                        <p>${cliente.obs}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Referente a doação para a instituição:</p>
+                                        <p>${empresa.name}</p>
+                                        <p style="font-weight: bold;">Recibo ID:</p>
+                                        <p>${cliente.id}</p>
+                                        <p style="font-weight: bold;">Valor Total: R$ ${parseFloat(cliente.valor).toFixed(2)}</p>
+                                        <hr>
+                                    </div>
+                                `;
+
+                                // Crie um iframe temporário
+                                var iframe = document.createElement('iframe');
+                                iframe.style.display = 'none';
+                                document.body.appendChild(iframe);
+
+                                // Abra o documento do iframe
+                                var doc = iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(htmlRecibo);
+                                doc.close();
+
+                                // Adicione um ouvinte de evento para verificar quando a impressão for concluída
+                                iframe.contentWindow.addEventListener('afterprint', function () {
+                                    // Após a impressão, redirecione para a rota desejada
+                                    document.getElementById('reciboForm').submit();
+
+                                });
+
+                                // Imprima o conteúdo do iframe
+                                iframe.contentWindow.print();
+                            }
+
+                            function confirmarEnvioFormulario_{{ $cliente -> id }}() {
+                                // Exibe um alerta de confirmação
+                                var confirmacao = confirm("Deseja realmente emitir o recibo?");
+
+                                // Se o usuário confirmar, envia o formulário
+                                if (confirmacao) {
+                                    imprimirRecibo_{{ $cliente -> id }}();
+                                }
+                            }
+                        </script>
+
                         @endif
 
                         <button type="button" class="btn bg-gradient-success text-white" data-toggle="modal"
@@ -381,29 +472,35 @@
                                                     <div class="col-md-6 mb-3">
                                                         <label>Data vencimento:</label>
                                                         <div class="input-group">
-                                                            <span class="input-group-text bg-gradient-success text-white">
+                                                            <span
+                                                                class="input-group-text bg-gradient-success text-white">
                                                                 <i class="fa-regular fa-calendar"></i>
                                                             </span>
-                                                            <input type="date" class="form-control custom-input" id="data_doacao"
-                                                            value="{{ $cliente->created_at->format('Y-m-d') }}" name="vencimento">
+                                                            <input type="date" class="form-control custom-input"
+                                                                id="data_doacao"
+                                                                value="{{ $cliente->created_at->format('Y-m-d') }}"
+                                                                name="vencimento">
                                                         </div>
                                                     </div>
 
                                                     <div class="col-md-6 mb-3">
                                                         <label>Telefone fixo:</label>
                                                         <div class="input-group">
-                                                            <span class="input-group-text bg-gradient-success text-white">
+                                                            <span
+                                                                class="input-group-text bg-gradient-success text-white">
                                                                 <i class="fa-solid fa-phone"></i>
                                                             </span>
-                                                            <input type="number" class="form-control custom-input" id="cliente_fixo"
-                                                            value="{{ $cliente->telefone_fixo }}" name="telefone_fixo">
+                                                            <input type="number" class="form-control custom-input"
+                                                                id="cliente_fixo" value="{{ $cliente->telefone_fixo }}"
+                                                                name="telefone_fixo">
                                                         </div>
                                                     </div>
                                                 </div>
-                        
+
                                                 <div class="col-md-12 mb-3">
                                                     <label>Observação:</label>
-                                                    <textarea class="form-control custom-input" id="observacao" name="observacao" rows="4">{{ $cliente->obs }}</textarea>
+                                                    <textarea class="form-control custom-input" id="observacao"
+                                                        name="observacao" rows="4">{{ $cliente->obs }}</textarea>
                                                 </div>
 
                                                 <div class="d-flex justify-content-between mb-4">

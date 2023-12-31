@@ -46,8 +46,10 @@ Route::middleware(['check-empresa'])->group(function () {
     Route::delete('/instituição/{empresa}/cadastro_cliente/{id}/deletar_doador', [EmpresaController::class, 'Empresa_cadastro_cliente_deletar'])->name('Empresa_cadastro_cliente_deletar');
     Route::get('/instituição/{empresa}/cadastro_cliente/{id}', [EmpresaController::class, 'Empresa_cadastro_cliente_view'])->name('Empresa_cadastro_cliente_view');
     Route::post('/instituição/{empresa}/cadastro_cliente/{id}/atualizar', [EmpresaController::class, 'Empresa_cadastro_cliente_att'])->name('Empresa_cadastro_cliente_att');
-    Route::get('/instituição/{empresa}/doações/{id}', [EmpresaController::class, 'empresa_doações'])->name('empresa_doações');
-    Route::post('/instituição/{empresa}/doações/localizar', [EmpresaController::class, 'empresa_doações_localizar'])->name('empresa_doações_localizar');
+
+    Route::post('/instituição/{empresa}/doadores/localizar', [EmpresaController::class, 'empresa_doadores_localizar'])->name('empresa_doadores_localizar');
+
+
     Route::post('/instituição/{empresa}/doações/registrar/{id}', [EmpresaController::class, 'empresa_registrar_doacao'])->name('empresa_registrar_doacao');
     Route::get('/instituição/{empresa}/areceber', [EmpresaController::class, 'empresa_areceber'])->name('empresa_areceber');
     Route::post('/instituição/{empresa}/areceber/{doacao_id}', [EmpresaController::class, 'empresa_areceber_emitir'])->name('empresa_areceber_emitir');

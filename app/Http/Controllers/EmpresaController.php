@@ -307,8 +307,8 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $clientes = Cliente::orderBy('name')->get();
-        $doacoes = Doacao::all();
+        $clientes = Cliente::orderBy('name')->paginate(10);
+        $doacoes = Doacao::paginate(10);
 
         return view('admin_empresa.dashboard_cadastro_cliente', compact('empresa', 'clientes', 'doacoes'));
     }
@@ -577,37 +577,9 @@ class EmpresaController extends Controller
         return view('admin_empresa.dashboard_areceber', compact('empresa', 'clientes'));
 
     }
-    public function empresa_doações(Request $request, $empresa, $id)
-    {
-        $empresa = Empresa::where('name', $empresa)->first();
-        // Cria uma nova conexão com o banco de dados da empresa.
-        Config::set('database.connections.empresa', [
-            'driver' => 'mysql',
-            'host' => $empresa->database_host,
-            'port' => $empresa->database_port,
-            'database' => $empresa->database_name,
-            'username' => $empresa->database_username,
-            'password' => $empresa->database_password,
-            'charset' => 'utf8mb4',
-            'collation' => 'utf8mb4_unicode_ci',
-            'prefix' => '',
-            'strict' => true,
-            'engine' => null,
-        ]);
 
-        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
-        DB::setDefaultConnection('empresa');
 
-        if (!$request->user()) {
-            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
-        }
-
-        $doacoes = Doacao::where('cliente_id', $id)->get();
-
-        return view('admin_empresa.dashboard_doacao', compact('empresa', 'doacoes'));
-    }
-
-    public function empresa_doações_localizar(Request $request, $empresa)
+    public function empresa_doadores_localizar(Request $request, $empresa)
     {
         $empresa = Empresa::where('name', $empresa)->first();
         // Cria uma nova conexão com o banco de dados da empresa.
@@ -824,7 +796,8 @@ class EmpresaController extends Controller
 
             // Retorne uma mensagem de sucesso
             //return response()->json(['success' => true, 'message' => 'Impressão concluída com sucesso.']);
-            return back()->with('success', 'Recibo gerado com sucesso!');
+            return redirect()->route('Empresa_cadastro_cliente', ['empresa'=>$empresa->name])->with('success', 'Recibo gerado com sucesso!');
+
         } catch (\Exception $e) {
             // Retorne uma mensagem de erro
             return response()->json(['success' => false, 'message' => 'Erro ao imprimir: ' . $e->getMessage()]);
