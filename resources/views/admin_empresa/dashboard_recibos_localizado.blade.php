@@ -38,13 +38,13 @@
                 <input type="text" class="form-control" placeholder="Buscar cliente" name="search">
                 <div class="input-group-append">
                     <span class="input-group-text bg-gradient-success text-white">
-                        <i class="fas fa-search"></i>
+                        <i class="fas fa-search p-1"></i>
                     </span>
                 </div>
             </div>
             <button type="submit" class="btn bg-gradient-success text-white col-12">Buscar cliente</button>
+            <a href="{{ route('empresa_baixar', ['empresa' => $empresa->name ]) }}"><button type="button" class="btn bg-gradient-danger text-white col-12 mt-2"><i class="fa-solid fa-arrows-rotate"></i></button></a>
         </form>
-
 
         <table class="table table-bordered">
             <thead class="bg-gradient-success text-white">

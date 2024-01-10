@@ -65,8 +65,13 @@ Route::middleware(['check-empresa'])->group(function () {
     Route::post('/instituição/{empresa}/usuarios/view/{id}', [EmpresaController::class, 'empresa_view_user'])->name('empresa_view_user');
     Route::post('/instituição/{empresa}/usuarios/view/{id}/atualizar', [EmpresaController::class, 'empresa_update_user'])->name('empresa_update_user');
     Route::post('/instituição/{empresa}/usuarios/{id}/delete_user', [EmpresaController::class, 'empresa_delete_user'])->name('empresa_delete_user');
+
     Route::get('/instituição/{empresa}/baixar_recibos', [EmpresaController::class, 'empresa_baixar'])->name('empresa_baixar');
+    Route::post('/instituição/{empresa}/baixar_recibos/{id}/deletar', [EmpresaController::class, 'empresa_deleta_recibos'])->name('empresa_deleta_recibos');
     Route::post('/instituição/{empresa}/baixar_recibos/{cliente_id}/{id}', [EmpresaController::class, 'empresa_dar_baixa_em_recibos'])->name('empresa_dar_baixa_em_recibos');
+
+    Route::post('/instituição/{empresa}/baixar_recibos/pesquisa', [EmpresaController::class, 'empresa_baixar_recibos_pesquisa'])->name('empresa_baixar_recibos_pesquisa');
+
 
     Route::get('/instituição/{empresa}/termo_sae/{id}', [EmpresaController::class, 'empresa_termo_sae_route'])->name('empresa_termo_sae_route');
     Route::post('/instituição/{empresa}/termo_sae/{id}/gerando_termo', [EmpresaController::class, 'empresa_gerando_termo_sae'])->name('empresa_gerando_termo_sae');

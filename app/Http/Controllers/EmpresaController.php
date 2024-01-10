@@ -775,7 +775,10 @@ class EmpresaController extends Controller
         try {
 
             $cliente = Cliente::find($id);
-            $cliente->situacao = "PRIMEIRA";
+
+            //dd($cliente);
+
+            $cliente->situacao = "PRIMEIRAVIA";
             $cliente->save();
 
             $aberto = new EmAberto();
@@ -1333,10 +1336,64 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $abertos = EmAberto::where('status', 'ABERTO')->get();
+        $abertos = EmAberto::where('status', 'ABERTO')
+        ->orderBy('nome_cliente', 'asc') // Substitua 'nome_cliente' pelo nome real da coluna que deseja ordenar
+        ->paginate(20);    
 
         return view('admin_empresa.dashboard_recibos', compact('empresa', 'abertos'));
     }
+
+
+
+    public function empresa_baixar_recibos_pesquisa(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
+        // Cria uma nova conexão com o banco de dados da empresa.
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        // Configura a conexão com o banco de dados da empresa para que fique disponível em todo o escopo da aplicação.
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $searchTerm = request('search');
+
+        $abertos = EmAberto::where('status', 'ABERTO')
+            ->where('nome_cliente', 'like', '%' . $searchTerm . '%')
+            ->orderBy('nome_cliente', 'asc')
+            ->paginate(20);
+
+        return view('admin_empresa.dashboard_recibos_localizado', compact('empresa', 'abertos'));
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     public function empresa_dar_baixa_em_recibos(Request $request, $empresa, $cliente_id, $id)
     {
@@ -1364,6 +1421,8 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
+        //dd($request->all());
+
         $tipo_pagamento = request('metodo_pagamento');
 
         $atualizar_status = EmAberto::find($id);
@@ -1371,7 +1430,21 @@ class EmpresaController extends Controller
         $atualizar_status->save();
 
         $atualizar_created_at_clientes = Cliente::find($cliente_id);
-        $atualizar_created_at_clientes->created_at = now();
+
+        $atualizar_created_at_clientes->valor = request('new_valor');
+
+        // Obtenha a data do campo new_date
+        $novaData = Carbon::parse($request->input('new_date'));
+
+        // Subtraia um mês da data
+        $novaData = $novaData->subMonth();
+
+        // Atualize o campo new_date com a nova data formatada
+        $request->merge(['new_date' => $novaData->toDateString()]);
+
+        // Resto do seu código
+        $atualizar_created_at_clientes->created_at = request('new_date');
+
         $atualizar_created_at_clientes->save();
 
         // PAREI AQUI --------------------------------------------------------------------------------------------------------------
@@ -1391,7 +1464,8 @@ class EmpresaController extends Controller
         $registrar_doação->valor = $atualizar_created_at_clientes->valor;
         $registrar_doação->save();
 
-        return back()->with('success', 'Recibo baixado com sucesso!');
+
+        return redirect()->route('empresa_baixar', ['empresa'=>$empresa->name])->with('success', 'Recibo baixado com sucesso!');
 
     }
 
@@ -1664,7 +1738,34 @@ class EmpresaController extends Controller
         return view('admin_empresa.dashboard_metricas_pesquisa', compact('projecoes', 'statusDoacoesEmAberto', 'clientesContribuicao', 'doacoesPorTipo', 'doacoesMesAtual', 'doacoesMesPassado', 'empresa'));
     }
 
+    public function empresa_deleta_recibos(Request $request, $empresa, $id){
+        $empresa = Empresa::where('name', $empresa)->first();
 
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        DB::setDefaultConnection('empresa');
+
+        if (!$request->user()) {
+            return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
+        }
+
+        $remover = EmAberto::find($id);
+        $remover->delete();
+
+        return back()->with('success', 'Recibo removido com sucesso!');
+    }
 
 
 }

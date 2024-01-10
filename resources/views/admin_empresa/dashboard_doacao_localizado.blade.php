@@ -143,6 +143,7 @@
             <tbody class="bg-white">
                 @foreach ($clientes as $cliente)
                 <tr>
+
                     <td class="align-middle text-center">{{ $cliente->name }}</td>
                     <td class="align-middle text-center">{{ $cliente->obs }}</td>
                     <td class="align-middle text-center">
@@ -168,36 +169,17 @@
                     <td class="align-middle text-center">{{ $cliente->created_at->format('d/m/Y') }}</td>
                     <td class="align-middle text-center">
 
-                        @if ($cliente->situacao != 'PRIMEIRA')
-
-                        <form
-                            action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}"
-                            method="POST" id="reciboForm" style="display: none;">
+                        @if ($cliente->situacao != 'PRIMEIRAVIA')
+                        <form action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}" method="POST" id="reciboForm_{{ $cliente->id }}" style="display: none;">
                             @csrf
                         </form>
-
-                        <button type="button" class="btn" style="background-color: #38414A; color: white;"
-                            onclick="confirmarEnvioFormulario_{{ $cliente->id }}()">
-                            1° RECIBO
+                
+                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}', '{{ $cliente->valor }}')">
+                            1° VIA RECIBO
                         </button>
-
+                
                         <script>
-                            function imprimirRecibo_{{ $cliente -> id }}() {
-                                // Dados do cliente e empresa (substitua pelos dados reais)
-                                var cliente = {
-                                    name: "{{ $cliente->name }}",
-                                    rua: "{{ $cliente->rua }}",
-                                    numero: "{{ $cliente->numero }}",
-                                    bairro: "{{ $cliente->bairro }}",
-                                    cidade: "{{ $cliente->cidade }}",
-                                    celular: "{{ $cliente->celular }}",
-                                    telefone_fixo: "{{ $cliente->fixo }}",
-                                    created_at: new Date(),
-                                    obs: "{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}",
-                                    id: "{{ $cliente->id }}",
-                                    valor: "{{ $cliente->valor }}"
-                                };
-
+                            function imprimirRecibo(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor) {
                                 var empresa = {
                                     name: "Associação Coração Acolhedor",
                                     cnpj: "29.450.986/0001-83",
@@ -205,7 +187,7 @@
                                     whatsapp: "(34) 99680-9115",
                                     endereco: "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG"
                                 };
-
+                
                                 var htmlRecibo = `
                                     <div style="width: 58mm; text-align: left; font-family: 'Arial', sans-serif; font-size: 12px; line-height: 1.5;">
                                         <p style="font-weight: bold; font-size: 14px; text-align: center;">${empresa.name}</p>
@@ -215,59 +197,119 @@
                                         <p>${empresa.endereco}</p>
                                         <hr>
                                         <p style="font-weight: bold;">Recebemos de:</p>
-                                        <p>${cliente.name}</p>
+                                        <p>${name}</p>
                                         <p style="font-weight: bold;">Endereço:</p>
-                                        <p>${cliente.bairro} - ${cliente.rua} - ${cliente.numero} - ${cliente.cidade}</p>
-                                        <p>Celular: ${cliente.celular}</p>
-                                        <p>Fixo: ${cliente.telefone_fixo}</p>
-                                        <p>Data/Hora: ${cliente.created_at.toLocaleDateString()}</p>
+                                        <p>${bairro} - ${rua} - ${numero} - ${cidade}</p>
+                                        <p>Celular: ${celular}</p>
+                                        <p>Fixo: ${telefone_fixo}</p>
+                                        <p>Data/Hora: ${new Date(created_at).toLocaleDateString()}</p>
                                         <hr>
                                         <p style="font-weight: bold;">Observação:</p>
-                                        <p>${cliente.obs}</p>
+                                        <p>${obs}</p>
                                         <hr>
                                         <p style="font-weight: bold;">Referente a doação para a instituição:</p>
                                         <p>${empresa.name}</p>
                                         <p style="font-weight: bold;">Recibo ID:</p>
-                                        <p>${cliente.id}</p>
-                                        <p style="font-weight: bold;">Valor Total: R$ ${parseFloat(cliente.valor).toFixed(2)}</p>
+                                        <p>${id}</p>
+                                        <p style="font-weight: bold;">Valor Total: R$ ${parseFloat(valor).toFixed(2)}</p>
                                         <hr>
                                     </div>
                                 `;
-
-                                // Crie um iframe temporário
+                
                                 var iframe = document.createElement('iframe');
                                 iframe.style.display = 'none';
                                 document.body.appendChild(iframe);
-
-                                // Abra o documento do iframe
+                
                                 var doc = iframe.contentWindow.document;
                                 doc.open();
                                 doc.write(htmlRecibo);
                                 doc.close();
-
-                                // Adicione um ouvinte de evento para verificar quando a impressão for concluída
+                
                                 iframe.contentWindow.addEventListener('afterprint', function () {
-                                    // Após a impressão, redirecione para a rota desejada
-                                    document.getElementById('reciboForm').submit();
-
+                                    document.getElementById('reciboForm_' + id).submit();
                                 });
-
-                                // Imprima o conteúdo do iframe
+                
                                 iframe.contentWindow.print();
                             }
-
-                            function confirmarEnvioFormulario_{{ $cliente -> id }}() {
-                                // Exibe um alerta de confirmação
+                
+                            function confirmarEnvioFormulario(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor) {
                                 var confirmacao = confirm("Deseja realmente emitir o recibo?");
-
-                                // Se o usuário confirmar, envia o formulário
                                 if (confirmacao) {
-                                    imprimirRecibo_{{ $cliente -> id }}();
+                                    imprimirRecibo(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor);
                                 }
                             }
                         </script>
-
-                        @endif
+                    @else
+                        <form action="{{ route('empresa_cadastro_emitindo_recibo', ['empresa' => $empresa->name, 'id' => $cliente->id]) }}" method="POST" id="reciboForm_{{ $cliente->id }}" style="display: none;">
+                            @csrf
+                        </form>
+                
+                        <button type="button" class="btn bg-gradient-danger" style="color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}', '{{ $cliente->valor }}')">
+                            2° VIA RECIBO
+                        </button>
+                
+                        <script>
+                            function imprimirRecibo(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor) {
+                                var empresa = {
+                                    name: "Associação Coração Acolhedor",
+                                    cnpj: "29.450.986/0001-83",
+                                    email: "associacaocoracaoacolhedor@gmail.com",
+                                    whatsapp: "(34) 99680-9115",
+                                    endereco: "Av. Geraldo Alves Tavares. 1991, Bairro Universitário - CEP 38.302-223 - Ituiutaba-MG"
+                                };
+                
+                                var htmlRecibo = `
+                                    <div style="width: 58mm; text-align: left; font-family: 'Arial', sans-serif; font-size: 12px; line-height: 1.5;">
+                                        <p style="font-weight: bold; font-size: 14px; text-align: center;">${empresa.name}</p>
+                                        <p>CNPJ ${empresa.cnpj}</p>
+                                        <p style="font-size: 12px;">${empresa.email}</p>
+                                        <p>WhatsApp: ${empresa.whatsapp}</p>
+                                        <p>${empresa.endereco}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Recebemos de:</p>
+                                        <p>${name}</p>
+                                        <p style="font-weight: bold;">Endereço:</p>
+                                        <p>${bairro} - ${rua} - ${numero} - ${cidade}</p>
+                                        <p>Celular: ${celular}</p>
+                                        <p>Fixo: ${telefone_fixo}</p>
+                                        <p>Data/Hora: ${new Date(created_at).toLocaleDateString()}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Observação:</p>
+                                        <p>${obs}</p>
+                                        <hr>
+                                        <p style="font-weight: bold;">Referente a doação para a instituição:</p>
+                                        <p>${empresa.name}</p>
+                                        <p style="font-weight: bold;">Recibo ID:</p>
+                                        <p>${id}</p>
+                                        <p style="font-weight: bold;">Valor Total: R$ ${parseFloat(valor).toFixed(2)}</p>
+                                        <hr>
+                                    </div>
+                                `;
+                
+                                var iframe = document.createElement('iframe');
+                                iframe.style.display = 'none';
+                                document.body.appendChild(iframe);
+                
+                                var doc = iframe.contentWindow.document;
+                                doc.open();
+                                doc.write(htmlRecibo);
+                                doc.close();
+                
+                                iframe.contentWindow.addEventListener('afterprint', function () {
+                                    document.getElementById('reciboForm_' + id).submit();
+                                });
+                
+                                iframe.contentWindow.print();
+                            }
+                
+                            function confirmarEnvioFormulario(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor) {
+                                var confirmacao = confirm("Deseja realmente emitir o recibo?");
+                                if (confirmacao) {
+                                    imprimirRecibo(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor);
+                                }
+                            }
+                        </script>
+                    @endif
 
                         <button type="button" class="btn bg-gradient-success text-white" data-toggle="modal"
                             data-target="#dadosCliente_{{ $cliente->id }}">
