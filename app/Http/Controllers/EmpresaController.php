@@ -891,7 +891,7 @@ class EmpresaController extends Controller
             return redirect()->route('index', ['empresa' => $empresa->name])->with('error', 'Você precisa fazer login para acessar essa página.');
         }
 
-        $logs_geral = Mod::all();
+        $logs_geral = Mod::paginate(25);
         $logs = [];
 
         foreach ($logs_geral as $log) {
@@ -939,7 +939,7 @@ class EmpresaController extends Controller
         // Calcular outras porcentagens conforme necessário
         $porcentagem_total = ($totalCadastro > 0) ? ($totalFinalizadoMesAtual / $totalCadastro) * 100 : 0;
 
-        return view('admin_empresa.dashboard_logs', compact('porcentagem_total', 'logs', 'empresa', 'users', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes', 'totalFinalizadoMesAtual', 'totalFinalizadoMesAnterior', 'porcentagem_finalizados'));
+        return view('admin_empresa.dashboard_logs', compact('porcentagem_total', 'logs', 'logs_geral', 'empresa', 'users', 'totalCadastro', 'totalCadastroMesAnterior', 'porcentagem_tiquete_clientes', 'totalFinalizadoMesAtual', 'totalFinalizadoMesAnterior', 'porcentagem_finalizados'));
 
 
     }
@@ -1764,7 +1764,8 @@ class EmpresaController extends Controller
         $remover = EmAberto::find($id);
         $remover->delete();
 
-        return back()->with('success', 'Recibo removido com sucesso!');
+        return redirect()->route('empresa_baixar', ['empresa'=>$empresa->name])->with('success', 'Recibo removido com sucesso!');
+
     }
 
 

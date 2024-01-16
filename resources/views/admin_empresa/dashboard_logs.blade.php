@@ -174,6 +174,9 @@
             </tr>
         </tbody>
     </table>
+    <div class="d-flex justify-content-center mb-5">
+        {{ $logs_geral->links('pagination::bootstrap-5') }}
+    </div>
 </div>
 </div>
 

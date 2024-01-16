@@ -174,9 +174,10 @@
                             @csrf
                         </form>
                 
-                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}', '{{ $cliente->valor }}')">
+                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
                             1° VIA RECIBO
                         </button>
+
                 
                         <script>
                             function imprimirRecibo(id, name, rua, numero, bairro, cidade, celular, telefone_fixo, created_at, obs, valor) {
@@ -244,7 +245,7 @@
                             @csrf
                         </form>
                 
-                        <button type="button" class="btn bg-gradient-danger" style="color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ str_replace("\n", '<br>', addslashes($cliente->obs)) }}', '{{ $cliente->valor }}')">
+                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
                             2° VIA RECIBO
                         </button>
                 
