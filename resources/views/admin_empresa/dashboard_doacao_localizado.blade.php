@@ -134,7 +134,6 @@
                     <th class="text-center">Observação</th>
                     <th class="text-center">Endereço</th>
                     <th class="text-center">Celular/Telefone</th>
-                    <th class="text-center">Tipo de doação</th>
                     <th class="text-center">Valor doação</th>
                     <th class="text-center">Data vencimento</th>
                     <th class="rounded-right text-center">Opções</th>
@@ -143,28 +142,25 @@
             <tbody class="bg-white">
                 @foreach ($clientes as $cliente)
                 <tr>
-
-                    <td class="align-middle text-center">{{ $cliente->name }}</td>
+                    <td class="align-middle text-center">
+                        @if ($cliente->tipo == 'SAE')
+                            <img src="{{ asset('img/sae.png') }}" style="max-width: 56px;">
+                        @endif
+                        {{ $cliente->name }}</td>
                     <td class="align-middle text-center">{{ $cliente->obs }}</td>
                     <td class="align-middle text-center">
                         {{ $cliente->bairro . ' - ' . $cliente->rua . ' - ' . $cliente->numero }}</td>
 
                     <td class="align-middle text-center">
-                        @if($cliente->celular == null)
+                        @if ($cliente->celular == null)
                         {{ $cliente->telefone_fixo }}
-                        @elseif($cliente->celular && $cliente->telefone_fixo )
+                        @elseif($cliente->celular && $cliente->telefone_fixo)
                         FIXO: {{ $cliente->telefone_fixo }} - CEL: {{ $cliente->celular }}
                         @else
                         {{ $cliente->celular }}
                         @endif
                     </td>
 
-                    @if($cliente->tipo == "SAE")
-                    <td class="align-middle text-center"><img src="{{ asset('img/sae.png') }}"
-                            style="max-width: 100px;"></td>
-                    @else
-                    <td class="align-middle text-center">MENSAL</td>
-                    @endif
                     <td class="align-middle text-center">R$ {{ $cliente->valor }}</td>
                     <td class="align-middle text-center">{{ $cliente->created_at->format('d/m/Y') }}</td>
                     <td class="align-middle text-center">
@@ -383,24 +379,53 @@
                                                 <table class="table table-bordered table-hover">
                                                     <thead class="bg-gradient-success text-white">
                                                         <tr>
-                                                            <th class="rounded-left">ID</th>
-                                                            <th>Cliente</th>
-                                                            <th>Valor</th>
-                                                            <th>Tipo</th>
-                                                            <th class="rounded-right">Data da Doação</th>
+                                                            <th class="align-middle rounded-left">ID</th>
+                                                            <th class="align-middle">Cliente</th>
+                                                            <th class="align-middle">Valor</th>
+                                                            <th class="align-middle">Tipo</th>
+                                                            <th class="align-middle">Data da Doação</th>
+                                                            <th class="align-middle rounded-right">Opções</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($doacoes as $doacao)
-                                                        <tr>
-                                                            @if($doacao->cliente_id == $cliente->id)
-                                                            <td>{{ $doacao->id }}</td>
-                                                            <td>{{ $doacao->cliente->name }}</td>
-                                                            <td>R$ {{ $doacao->valor }}</td>
-                                                            <td>{{ $doacao->tipo }}</td>
-                                                            <td>{{ $doacao->created_at->format('d/m/Y') }}</td>
-                                                            @endif
-                                                        </tr>
+                                                            <tr>
+                                                                <form action="{{ route('empresa_atualiza_recibo_baixado', [ 'empresa' => $empresa->name, 'id' => $doacao->id ]) }}" method="POST">
+                                                                @if ($doacao->cliente_id == $cliente->id)
+                                                                <td class="align-middle">{{ $doacao->id }}</td>
+    
+                                                                <td class="align-middle">{{ $doacao->cliente->name }}</td>
+                                                                <td class="align-middle">
+                                                                    @if(Auth::user()->tipo == "admin")
+                                                                        <input class="form-control" name="valor_cliente" value="{{ $doacao->valor }}" style="color: black!important;"/>
+                                                                    @else
+                                                                        {{ $doacao->valor }}
+                                                                    @endif
+                                                                </td>
+                                                                <td class="align-middle">
+                                                                    @if(Auth::user()->tipo == "admin")
+                                                                        <select class="form-control" id="metodo_pagamento" name="metodo_pagamento" style="color: black!important;">
+                                                                            <option value="DINHEIRO" {{ $doacao->tipo === 'DINHEIRO' ? 'selected' : '' }}>DINHEIRO</option>
+                                                                            <option value="PIX" {{ $doacao->tipo === 'PIX' ? 'selected' : '' }}>PIX</option>
+                                                                        </select>
+                                                                    @else
+                                                                        {{ $doacao->tipo }}
+                                                                    @endif
+                                                                </td>
+    
+                                                                <td class="align-middle">{{ $doacao->created_at->format('d/m/Y') }}</td>
+                                                                <td class="align-middle">
+                                                                   
+                                                                        @csrf
+                                                                        @if(Auth::user()->tipo == "admin")
+                                                                            <button type="submit" class="btn bg-gradient-success"><i class="fa-solid fa-pen-to-square text-white"></i></button>
+                                                                        @else
+                                                                        <button type="button" class="btn bg-gradient-danger text-white disabled">Access admin</button>
+                                                                        @endif
+                                                                    </form>
+                                                                </td>
+                                                                @endif
+                                                            </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>
