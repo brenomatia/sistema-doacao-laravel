@@ -56,6 +56,8 @@ Route::middleware(['check-empresa'])->group(function () {
     Route::post('/instituição/{empresa}/cadastro_cliente/primeira/{id}', [EmpresaController::class, 'empresa_cadastro_cliente_primeira'])->name('empresa_cadastro_cliente_primeira');
     Route::post('/instituição/{empresa}/cadastro_cliente/primeira/{id}/emitindo_recibo', [EmpresaController::class, 'empresa_cadastro_emitindo_recibo'])->name('empresa_cadastro_emitindo_recibo');
     Route::post('/instituição/{empresa}/cadastro_cliente/primeira/{id}/processando_recibo', [EmpresaController::class, 'empresa_cadastro_processando_recibo'])->name('empresa_cadastro_processando_recibo');
+    Route::post('/instituição/{empresa}/cadastro_cliente/atualiza_baixa/{id}', [EmpresaController::class, 'empresa_atualiza_recibo_baixado'])->name('empresa_atualiza_recibo_baixado');
+    
     Route::get('/instituição/{empresa}/logs', [EmpresaController::class, 'empresa_logs'])->name('empresa_logs');
 
     Route::post('/instituição/{empresa}/logs/pesquisa', [EmpresaController::class, 'empresa_logs_pesquisa'])->name('empresa_logs_pesquisa');
@@ -78,6 +80,9 @@ Route::middleware(['check-empresa'])->group(function () {
 
     Route::get('/instituição/{empresa}/metricas', [EmpresaController::class, 'empresa_metricas'])->name('empresa_metricas');
     Route::post('/instituição/{empresa}/metricas/pesquisa_personalizada', [EmpresaController::class, 'empresa_metricas_pesquisa'])->name('empresa_metricas_pesquisa');
+
+    Route::get('/instituição/{empresa}/mesatual', [EmpresaController::class, 'empresa_mesatual'])->name('empresa_mesatual');
+
     /*
     |--------------------------------------------------------------------------
     | GERAL LOGOUT EMPRESA

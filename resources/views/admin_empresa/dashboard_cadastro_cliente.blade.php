@@ -395,22 +395,36 @@
                                                 <table class="table table-bordered table-hover">
                                                     <thead class="bg-gradient-success text-white">
                                                         <tr>
-                                                            <th class="rounded-left">ID</th>
-                                                            <th>Cliente</th>
-                                                            <th>Valor</th>
-                                                            <th>Tipo</th>
-                                                            <th class="rounded-right">Data da Doação</th>
+                                                            <th class="align-middle rounded-left">ID</th>
+                                                            <th class="align-middle">Cliente</th>
+                                                            <th class="align-middle">Valor</th>
+                                                            <th class="align-middle">Tipo</th>
+                                                            <th class="align-middle">Data da Doação</th>
+                                                            <th class="align-middle rounded-right">Opções</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($doacoes as $doacao)
                                                         <tr>
+                                                            <form action="{{ route('empresa_atualiza_recibo_baixado', [ 'empresa' => $empresa->name, 'id' => $doacao->id ]) }}" method="POST">
                                                             @if ($doacao->cliente_id == $cliente->id)
-                                                            <td>{{ $doacao->id }}</td>
-                                                            <td>{{ $doacao->cliente->name }}</td>
-                                                            <td>R$ {{ $doacao->valor }}</td>
-                                                            <td>{{ $doacao->tipo }}</td>
-                                                            <td>{{ $doacao->created_at->format('d/m/Y') }}
+                                                            <td class="align-middle">{{ $doacao->id }}</td>
+
+                                                            <td class="align-middle">{{ $doacao->cliente->name }}</td>
+                                                            <td class="align-middle"><input class="form-control" name="valor_cliente" value="{{ $doacao->valor }}" style="color: black!important;"/></td>
+                                                            <td class="align-middle">
+                                                                <select class="form-control" id="metodo_pagamento" name="metodo_pagamento" style="color: black!important;">
+                                                                    <option value="DINHEIRO" {{ $doacao->tipo === 'DINHEIRO' ? 'selected' : '' }}>DINHEIRO</option>
+                                                                    <option value="PIX" {{ $doacao->tipo === 'PIX' ? 'selected' : '' }}>PIX</option>
+                                                                </select>
+                                                            </td>
+
+                                                            <td class="align-middle">{{ $doacao->created_at->format('d/m/Y') }}</td>
+                                                            <td class="align-middle">
+                                                               
+                                                                    @csrf
+                                                                    <button class="btn bg-gradient-success"><i class="fa-solid fa-pen-to-square text-white"></i></button>
+                                                                </form>
                                                             </td>
                                                             @endif
                                                         </tr>

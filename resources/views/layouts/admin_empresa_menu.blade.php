@@ -84,6 +84,37 @@
           <li class="nav-item mt-3 mb-3 text-center text-gray">ADMINISTRATIVO</li>
 
           <li class="nav-item active">
+            <a class="nav-link" href="{{ route('empresa_mesatual', ['empresa' => $empresa->name ]) }}">
+              <i class="fa-solid fa-calendar-check"></i>
+        
+                @php
+                $nomeMesIngles = \Carbon\Carbon::now()->formatLocalized('%B');
+                
+                $traducaoMeses = [
+                    'January'   => 'Janeiro',
+                    'February'  => 'Fevereiro',
+                    'March'     => 'Março',
+                    'April'     => 'Abril',
+                    'May'       => 'Maio',
+                    'June'      => 'Junho',
+                    'July'      => 'Julho',
+                    'August'    => 'Agosto',
+                    'September' => 'Setembro',
+                    'October'   => 'Outubro',
+                    'November'  => 'Novembro',
+                    'December'  => 'Dezembro',
+                ];
+            
+                $nomeMes = $traducaoMeses[$nomeMesIngles];
+            @endphp
+            
+        
+                O mês de {{ $nomeMes }}
+            </a>
+        </li>
+        
+
+          <li class="nav-item active">
             <a class="nav-link" href="{{ route('empresa_metricas', ['empresa' => $empresa->name ]) }}">
               <i class="fa-solid fa-square-poll-vertical"></i> Métricas
             </a>

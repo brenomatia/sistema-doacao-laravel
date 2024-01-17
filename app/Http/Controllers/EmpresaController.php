@@ -1768,5 +1768,72 @@ class EmpresaController extends Controller
 
     }
 
+    public function empresa_mesatual(Request $request, $empresa)
+    {
+        $empresa = Empresa::where('name', $empresa)->first();
 
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        DB::setDefaultConnection('empresa');
+
+        
+
+        $now = Carbon::now();
+
+        $totalRegistrosMesAtual = Cliente::whereMonth('created_at', $now->month)
+        ->whereYear('created_at', $now->year)
+        ->paginate(25);
+
+        $totalValorArrecadado = Doacao::whereMonth('created_at', $now->month)
+        ->whereYear('created_at', $now->year)
+        ->sum('valor');
+
+        $totalCadastros = Cliente::whereMonth('created_at', $now->month)
+        ->whereYear('created_at', $now->year)
+        ->count();
+
+        return view('admin_empresa.dashboard_mes', compact('empresa', 'totalCadastros', 'totalRegistrosMesAtual', 'totalValorArrecadado'));
+
+    }
+
+    public function empresa_atualiza_recibo_baixado(Request $request, $empresa, $id){
+        $empresa = Empresa::where('name', $empresa)->first();
+
+        Config::set('database.connections.empresa', [
+            'driver' => 'mysql',
+            'host' => $empresa->database_host,
+            'port' => $empresa->database_port,
+            'database' => $empresa->database_name,
+            'username' => $empresa->database_username,
+            'password' => $empresa->database_password,
+            'charset' => 'utf8mb4',
+            'collation' => 'utf8mb4_unicode_ci',
+            'prefix' => '',
+            'strict' => true,
+            'engine' => null,
+        ]);
+
+        DB::setDefaultConnection('empresa');
+
+        $buscaDoacao = Doacao::find($id);
+        $buscaDoacao->valor = $request->input('valor_cliente');
+        $buscaDoacao->tipo = $request->input('metodo_pagamento');
+        $buscaDoacao->save();
+
+        if($buscaDoacao){
+            return redirect()->route('Empresa_cadastro_cliente', ['empresa'=>$empresa->name])->with('success', 'Recibo baixado atualizado com sucesso!');
+        }
+    }
 }
