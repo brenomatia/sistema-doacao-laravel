@@ -253,7 +253,7 @@
                             @csrf
                         </form>
                 
-                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
+                        <button type="button" class="btn bg-gradient-danger text-white" style="color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
                             2° VIA RECIBO
                         </button>
                 
@@ -377,7 +377,7 @@
                         <!-- MODAL LISTA DE  -->
                         <div class="modal fade" id="lista_{{ $cliente->id }}" tabindex="-1" role="dialog"
                             aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-dialog" role="document" style="max-width: 60%;">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
@@ -401,43 +401,46 @@
                                                     </thead>
                                                     <tbody>
                                                         @foreach ($doacoes as $doacao)
-                                                        <tr>
-                                                            <form action="{{ route('empresa_atualiza_recibo_baixado', [ 'empresa' => $empresa->name, 'id' => $doacao->id ]) }}" method="POST">
                                                             @if ($doacao->cliente_id == $cliente->id)
-                                                            <td class="align-middle">{{ $doacao->id }}</td>
+                                                            <tr>
+                                                            
+                                                                <form action="{{ route('empresa_atualiza_recibo_baixado', [ 'empresa' => $empresa->name, 'id' => $doacao->id ]) }}" method="POST">
+                                                                
+                                                                <td class="align-middle">{{ $doacao->id }}</td>
 
-                                                            <td class="align-middle">{{ $doacao->cliente->name }}</td>
-                                                            <td class="align-middle">
-                                                                @if(Auth::user()->tipo == "admin")
-                                                                    <input class="form-control" name="valor_cliente" value="{{ $doacao->valor }}" style="color: black!important;"/>
-                                                                @else
-                                                                    {{ $doacao->valor }}
-                                                                @endif
-                                                            </td>
-                                                            <td class="align-middle">
-                                                                @if(Auth::user()->tipo == "admin")
-                                                                    <select class="form-control" id="metodo_pagamento" name="metodo_pagamento" style="color: black!important;">
-                                                                        <option value="DINHEIRO" {{ $doacao->tipo === 'DINHEIRO' ? 'selected' : '' }}>DINHEIRO</option>
-                                                                        <option value="PIX" {{ $doacao->tipo === 'PIX' ? 'selected' : '' }}>PIX</option>
-                                                                    </select>
-                                                                @else
-                                                                    {{ $doacao->tipo }}
-                                                                @endif
-                                                            </td>
-
-                                                            <td class="align-middle">{{ $doacao->created_at->format('d/m/Y') }}</td>
-                                                            <td class="align-middle">
-                                                               
-                                                                    @csrf
+                                                                <td class="align-middle">{{ $doacao->cliente->name }}</td>
+                                                                <td class="align-middle">
                                                                     @if(Auth::user()->tipo == "admin")
-                                                                        <button type="submit" class="btn bg-gradient-success"><i class="fa-solid fa-pen-to-square text-white"></i></button>
+                                                                        <input class="form-control" name="valor_cliente" value="{{ $doacao->valor }}" style="color: black!important;"/>
                                                                     @else
-                                                                    <button type="button" class="btn bg-gradient-danger text-white disabled">Access admin</button>
+                                                                        {{ $doacao->valor }}
                                                                     @endif
-                                                                </form>
-                                                            </td>
+                                                                </td>
+                                                                <td class="align-middle">
+                                                                    @if(Auth::user()->tipo == "admin")
+                                                                        <select class="form-control" id="metodo_pagamento" name="metodo_pagamento" style="color: black!important;">
+                                                                            <option value="DINHEIRO" {{ $doacao->tipo === 'DINHEIRO' ? 'selected' : '' }}>DINHEIRO</option>
+                                                                            <option value="PIX" {{ $doacao->tipo === 'PIX' ? 'selected' : '' }}>PIX</option>
+                                                                        </select>
+                                                                    @else
+                                                                        {{ $doacao->tipo }}
+                                                                    @endif
+                                                                </td>
+
+                                                                <td class="align-middle">{{ $doacao->created_at->format('d/m/Y') }}</td>
+                                                                <td class="align-middle">
+                                                                
+                                                                        @csrf
+                                                                        @if(Auth::user()->tipo == "admin")
+                                                                            <button type="submit" class="btn bg-gradient-success"><i class="fa-solid fa-pen-to-square text-white"></i></button>
+                                                                        @else
+                                                                        <button type="button" class="btn bg-gradient-danger text-white disabled">Access admin</button>
+                                                                        @endif
+                                                                    </form>
+                                                                </td>
+                                                                
+                                                            </tr>
                                                             @endif
-                                                        </tr>
                                                         @endforeach
                                                     </tbody>
                                                 </table>

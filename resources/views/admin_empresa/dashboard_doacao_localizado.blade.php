@@ -241,7 +241,7 @@
                             @csrf
                         </form>
                 
-                        <button type="button" class="btn" style="background-color: #38414A; color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
+                        <button type="button" class="btn btn bg-gradient-danger text-white" style="color: white;" onclick="confirmarEnvioFormulario('{{ $cliente->id }}', '{{ $cliente->name }}', '{{ $cliente->rua }}', '{{ $cliente->numero }}', '{{ $cliente->bairro }}', '{{ $cliente->cidade }}', '{{ $cliente->celular }}', '{{ $cliente->telefone_fixo }}', '{{ $cliente->created_at }}', '{{ addslashes(str_replace(["\r\n", "\n"], '<br>', $cliente->obs)) }}', '{{ $cliente->valor }}')">
                             2° VIA RECIBO
                         </button>
                 
@@ -365,7 +365,7 @@
                         <!-- MODAL LISTA DE  -->
                         <div class="modal fade" id="lista_{{ $cliente->id }}" tabindex="-1" role="dialog"
                             aria-labelledby="exampleModalLabel" aria-hidden="true">
-                            <div class="modal-dialog modal-lg" role="document">
+                            <div class="modal-dialog" role="document" style="max-width: 60%;">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <button type="button" class="close" data-dismiss="modal" aria-label="Fechar">
@@ -388,12 +388,14 @@
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        @foreach ($doacoes as $doacao)
+                                                    @foreach ($doacoes as $doacao)
+                                                            @if ($doacao->cliente_id == $cliente->id)
                                                             <tr>
+                                                            
                                                                 <form action="{{ route('empresa_atualiza_recibo_baixado', [ 'empresa' => $empresa->name, 'id' => $doacao->id ]) }}" method="POST">
-                                                                @if ($doacao->cliente_id == $cliente->id)
+                                                                
                                                                 <td class="align-middle">{{ $doacao->id }}</td>
-    
+
                                                                 <td class="align-middle">{{ $doacao->cliente->name }}</td>
                                                                 <td class="align-middle">
                                                                     @if(Auth::user()->tipo == "admin")
@@ -412,10 +414,10 @@
                                                                         {{ $doacao->tipo }}
                                                                     @endif
                                                                 </td>
-    
+
                                                                 <td class="align-middle">{{ $doacao->created_at->format('d/m/Y') }}</td>
                                                                 <td class="align-middle">
-                                                                   
+                                                                
                                                                         @csrf
                                                                         @if(Auth::user()->tipo == "admin")
                                                                             <button type="submit" class="btn bg-gradient-success"><i class="fa-solid fa-pen-to-square text-white"></i></button>
@@ -424,9 +426,11 @@
                                                                         @endif
                                                                     </form>
                                                                 </td>
-                                                                @endif
+                                                                
                                                             </tr>
+                                                            @endif
                                                         @endforeach
+                                                   
                                                     </tbody>
                                                 </table>
                                             </div>

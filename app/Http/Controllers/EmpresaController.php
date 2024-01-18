@@ -1792,16 +1792,18 @@ class EmpresaController extends Controller
 
         $now = Carbon::now();
 
-        $totalRegistrosMesAtual = Cliente::whereMonth('created_at', $now->month)
-        ->whereYear('created_at', $now->year)
+        $totalRegistrosMesAtual = Cliente::whereHas('doacoes', function ($query) use ($now) {
+            $query->whereMonth('created_at', $now->month)
+                ->whereYear('created_at', $now->year);
+        })
         ->paginate(25);
+        
 
         $totalValorArrecadado = Doacao::whereMonth('created_at', $now->month)
         ->whereYear('created_at', $now->year)
         ->sum('valor');
 
-        $totalCadastros = Cliente::whereMonth('created_at', $now->month)
-        ->whereYear('created_at', $now->year)
+        $totalCadastros = Cliente::all()
         ->count();
 
         return view('admin_empresa.dashboard_mes', compact('empresa', 'totalCadastros', 'totalRegistrosMesAtual', 'totalValorArrecadado'));
@@ -1827,13 +1829,15 @@ class EmpresaController extends Controller
 
         DB::setDefaultConnection('empresa');
 
+        //dd($request->all());
+
         $buscaDoacao = Doacao::find($id);
         $buscaDoacao->valor = $request->input('valor_cliente');
         $buscaDoacao->tipo = $request->input('metodo_pagamento');
         $buscaDoacao->save();
 
         if($buscaDoacao){
-            return redirect()->route('Empresa_cadastro_cliente', ['empresa'=>$empresa->name])->with('success', 'Recibo baixado atualizado com sucesso!');
+            return redirect()->route('Empresa_cadastro_cliente', ['empresa'=>$empresa->name])->with('success', 'Recibo baixado atualizado!');
         }
     }
 }

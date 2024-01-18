@@ -18,7 +18,7 @@
                         <div class="ml-auto">
                             <h4 class="card-title text-white" style="font-size: 30px;">{{ $totalCadastros }}</h4>
                             <p class="card-text">
-                                Doadores no mês atual
+                                Doadores total
                             </p>
                         </div>
                     </div>
